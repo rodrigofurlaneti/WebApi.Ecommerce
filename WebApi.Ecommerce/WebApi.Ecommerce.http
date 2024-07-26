@@ -1,0 +1,67 @@
+@WebApi.Ecommerce_HostAddress = http://localhost:5213
+
+### Get Weather Forecast
+GET {{WebApi.Ecommerce_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+### Get All Users
+GET {{WebApi.Ecommerce_HostAddress}}/api/users
+Accept: application/json
+
+###
+
+### Get User by ID
+GET {{WebApi.Ecommerce_HostAddress}}/api/users/1
+Accept: application/json
+
+###
+
+### Create a New User
+POST {{WebApi.Ecommerce_HostAddress}}/api/users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": 0,
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "address": "123 Main St",
+  "number": "456",
+  "neighborhood": "Downtown",
+  "city": "Metropolis",
+  "state": "NY",
+  "zipCode": "12345",
+  "cellPhone": "123-456-7890",
+  "username": "johndoe",
+  "password": "password123"
+}
+
+###
+
+### Update a User
+PUT {{WebApi.Ecommerce_HostAddress}}/api/users/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": 1,
+  "name": "John Doe Updated",
+  "email": "john.doe.updated@example.com",
+  "address": "123 Main St Updated",
+  "number": "456",
+  "neighborhood": "Downtown",
+  "city": "Metropolis",
+  "state": "NY",
+  "zipCode": "12345",
+  "cellPhone": "123-456-7890",
+  "username": "johndoe",
+  "password": "newpassword123"
+}
+
+###
+
+### Delete a User
+DELETE {{WebApi.Ecommerce_HostAddress}}/api/users/1
+Accept: application/json
