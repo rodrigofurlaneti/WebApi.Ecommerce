@@ -4,15 +4,10 @@ namespace WebApi.Ecommerce.Data.Interface
 {
     public interface IUsersRepository
     {
-        IEnumerable<User> GetUser();
-        Task<IEnumerable<User>> GetUserAsync();
-        void PostUser(User users);
-        Task PostUserAsync(User users);
-        void PutUser(User users);
-        Task PutUserAsync(User users);
-        User GetById(int id);
+        Task<IEnumerable<User>> GetAsync();
+        Task PostAsync(User users);
+        Task PutAsync(User users);
         Task<User> GetByIdAsync(int id);
-        void DeleteUser(int id);
-        Task DeleteUserAsync(int id);
+        Task DeleteAsync(int id);
     }
 }

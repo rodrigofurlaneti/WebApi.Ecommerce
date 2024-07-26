@@ -5,6 +5,18 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Adiciona o serviço CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -12,6 +24,7 @@ builder.Services.AddControllers();
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 // Register the UsersRepository
+builder.Services.AddScoped<IContactUsRepository, ContactUsRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
 // Add Swagger services
@@ -22,6 +35,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Usa a política de CORS
+app.UseCors("AllowAllOrigins");
+
+// Middleware de roteamento e endpoints
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

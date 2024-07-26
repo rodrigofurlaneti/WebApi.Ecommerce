@@ -9,19 +9,19 @@ using Microsoft.Extensions.Configuration;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
-    public class UsersRepository : IUsersRepository
+    public class ContactUsRepository : IContactUsRepository
     {
         private readonly string _connectionString;
 
-        public UsersRepository(IConfiguration configuration)
+        public ContactUsRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<IEnumerable<User>> GetAsync()
+        public async Task<IEnumerable<ContactUs>> GetAsync()
         {
-            List<User> list = new List<User>();
-            string storedProcedureName = "Ecommerce_Procedure_User_GetAll";
+            List<ContactUs> list = new List<ContactUs>();
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetAll";
 
             try
             {
@@ -36,7 +36,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             while (await reader.ReadAsync())
                             {
-                                list.Add(CreateUserFromReader(reader));
+                                list.Add(CreateContactUsFromReader(reader));
                             }
                         }
                     }
@@ -56,9 +56,9 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(User user)
+        public async Task PostAsync(ContactUs contactUs)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Insert";
 
             try
             {
@@ -69,18 +69,10 @@ namespace WebApi.Ecommerce.Data.Repository
                         command.CommandType = CommandType.StoredProcedure;
 
                         // Adicionar parâmetros ao comando
-                        command.Parameters.AddWithValue("@Name", user.Name);
-                        command.Parameters.AddWithValue("@Email", user.Email);
-                        command.Parameters.AddWithValue("@Address", user.Address);
-                        command.Parameters.AddWithValue("@Number", user.Number);
-                        command.Parameters.AddWithValue("@Complement", user.Complement);
-                        command.Parameters.AddWithValue("@Neighborhood", user.Neighborhood);
-                        command.Parameters.AddWithValue("@City", user.City);
-                        command.Parameters.AddWithValue("@State", user.State);
-                        command.Parameters.AddWithValue("@ZipCode", user.ZipCode);
-                        command.Parameters.AddWithValue("@CellPhone", user.CellPhone);
-                        command.Parameters.AddWithValue("@Username", user.Username);
-                        command.Parameters.AddWithValue("@Password", user.Password);
+                        command.Parameters.AddWithValue("@Name", contactUs.Name);
+                        command.Parameters.AddWithValue("@Email", contactUs.Email);
+                        command.Parameters.AddWithValue("@CellPhone", contactUs.CellPhone);
+                        command.Parameters.AddWithValue("@Message", contactUs.Message);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -99,11 +91,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<User> GetByIdAsync(int id)
+        public async Task<ContactUs> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_GetById";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetById";
 
-            User user = null;
+            ContactUs contactUs = null;
 
             try
             {
@@ -120,7 +112,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             if (await reader.ReadAsync())
                             {
-                                user = CreateUserFromReader(reader);
+                                contactUs = CreateContactUsFromReader(reader);
                             }
                         }
                     }
@@ -137,12 +129,12 @@ namespace WebApi.Ecommerce.Data.Repository
                 throw;
             }
 
-            return user;
+            return contactUs;
         }
 
-        public async Task PutAsync(User user)
+        public async Task PutAsync(ContactUs contactUs)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Update";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Update";
 
             try
             {
@@ -152,7 +144,7 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        AddUserParameters(command, user);
+                        AddContactUsParameters(command, contactUs);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -173,7 +165,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public async Task DeleteAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Delete";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Delete";
 
             try
             {
@@ -201,47 +193,31 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        private User CreateUserFromReader(SqlDataReader reader)
+        private ContactUs CreateContactUsFromReader(SqlDataReader reader)
         {
-            return new User
+            return new ContactUs
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 Name = reader.GetString(reader.GetOrdinal("Name")),
                 Email = reader.GetString(reader.GetOrdinal("Email")),
-                Address = reader.GetString(reader.GetOrdinal("Address")),
-                Number = reader.GetString(reader.GetOrdinal("Number")),
-                Complement = reader.GetString(reader.GetOrdinal("Complement")),
-                Neighborhood = reader.GetString(reader.GetOrdinal("Neighborhood")),
-                City = reader.GetString(reader.GetOrdinal("City")),
-                State = reader.GetString(reader.GetOrdinal("State")),
-                ZipCode = reader.GetString(reader.GetOrdinal("ZipCode")),
                 CellPhone = reader.GetString(reader.GetOrdinal("CellPhone")),
-                Username = reader.GetString(reader.GetOrdinal("Username")),
-                Password = reader.GetString(reader.GetOrdinal("Password")),
+                Message = reader.GetString(reader.GetOrdinal("Message")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
                 Status = reader.GetBoolean(reader.GetOrdinal("Status"))
             };
         }
 
-        private void AddUserParameters(SqlCommand command, User user)
+        private void AddContactUsParameters(SqlCommand command, ContactUs contactUs)
         {
-            command.Parameters.AddWithValue("@Id", user.Id);
-            command.Parameters.AddWithValue("@Name", user.Name);
-            command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@Address", user.Address);
-            command.Parameters.AddWithValue("@Number", user.Number);
-            command.Parameters.AddWithValue("@Complement", user.Complement);
-            command.Parameters.AddWithValue("@Neighborhood", user.Neighborhood);
-            command.Parameters.AddWithValue("@City", user.City);
-            command.Parameters.AddWithValue("@State", user.State);
-            command.Parameters.AddWithValue("@ZipCode", user.ZipCode);
-            command.Parameters.AddWithValue("@CellPhone", user.CellPhone);
-            command.Parameters.AddWithValue("@Username", user.Username);
-            command.Parameters.AddWithValue("@Password", user.Password);
-            command.Parameters.AddWithValue("@DateInsert", user.DateInsert);
-            command.Parameters.AddWithValue("@DateUpdate", user.DateUpdate);
-            command.Parameters.AddWithValue("@Status", user.Status);
+            command.Parameters.AddWithValue("@Id", contactUs.Id);
+            command.Parameters.AddWithValue("@Name", contactUs.Name);
+            command.Parameters.AddWithValue("@Email", contactUs.Email);
+            command.Parameters.AddWithValue("@CellPhone", contactUs.CellPhone);
+            command.Parameters.AddWithValue("@Message", contactUs.Message);
+            command.Parameters.AddWithValue("@DateInsert", contactUs.DateInsert);
+            command.Parameters.AddWithValue("@DateUpdate", contactUs.DateUpdate);
+            command.Parameters.AddWithValue("@Status", contactUs.Status);
         }
     }
 }

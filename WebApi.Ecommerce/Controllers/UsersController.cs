@@ -21,7 +21,7 @@ namespace WebApi.Ecommerce.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = await _usersRepository.GetUserAsync();
+            var users = await _usersRepository.GetAsync();
             return Ok(users);
         }
 
@@ -43,7 +43,7 @@ namespace WebApi.Ecommerce.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            await _usersRepository.PostUserAsync(user);
+            await _usersRepository.PostAsync(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
@@ -56,7 +56,7 @@ namespace WebApi.Ecommerce.Controllers
                 return BadRequest();
             }
 
-            await _usersRepository.PutUserAsync(user);
+            await _usersRepository.PutAsync(user);
             return NoContent();
         }
 
@@ -71,7 +71,7 @@ namespace WebApi.Ecommerce.Controllers
                 return NotFound();
             }
 
-            await _usersRepository.DeleteUserAsync(id); // Certifique-se de que esse método exista no repositório
+            await _usersRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
             return NoContent();
         }
     }
