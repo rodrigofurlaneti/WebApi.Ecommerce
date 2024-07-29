@@ -1,4 +1,4 @@
-﻿namespace WebApi.Ecommerce.Model
+﻿namespace Domain.Ecommerce.Model
 {
     public class ContactUs : Base
     {

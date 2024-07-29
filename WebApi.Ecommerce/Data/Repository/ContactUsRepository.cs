@@ -3,11 +3,10 @@ using System.Data;
 using System.Threading.Tasks;
 using System;
 using WebApi.Ecommerce.Data.Interface;
-using WebApi.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
-namespace WebApi.Ecommerce.Data.Repository
+namespace Domain.Ecommerce.Model
 {
     public class ContactUsRepository : IContactUsRepository
     {

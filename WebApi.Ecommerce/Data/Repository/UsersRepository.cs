@@ -3,9 +3,9 @@ using System.Data;
 using System.Threading.Tasks;
 using System;
 using WebApi.Ecommerce.Data.Interface;
-using WebApi.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Domain.Ecommerce.Model;
 
 namespace WebApi.Ecommerce.Data.Repository
 {

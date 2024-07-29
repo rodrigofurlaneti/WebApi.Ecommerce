@@ -1,4 +1,4 @@
-﻿using WebApi.Ecommerce.Model;
+﻿using Domain.Ecommerce.Model;
 
 namespace WebApi.Ecommerce.Data.Interface
 {
