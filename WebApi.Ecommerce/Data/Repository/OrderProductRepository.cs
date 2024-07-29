@@ -1,27 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
-using System;
-using WebApi.Ecommerce.Data.Interface;
+﻿using Domain.Ecommerce.Enum;
+using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Domain.Ecommerce.Enun;
+using System.Data;
 
-namespace Domain.Ecommerce.Model
+namespace WebApi.Ecommerce.Data.Repository
 {
-    public class ContactUsRepository : IContactUsRepository
+    public class OrderProductRepository
     {
         private readonly string _connectionString;
 
-        public ContactUsRepository(IConfiguration configuration)
+        public OrderProductRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<IEnumerable<ContactUs>> GetAsync()
+        public async Task<IEnumerable<OrderProduct>> GetAsync()
         {
-            List<ContactUs> list = new List<ContactUs>();
-            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetAll";
+            List<OrderProduct> list = new List<OrderProduct>();
+
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_GetAll";
 
             try
             {
@@ -30,13 +27,14 @@ namespace Domain.Ecommerce.Model
                     using (SqlCommand command = new SqlCommand(storedProcedureName, connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
+
                         await connection.OpenAsync();
 
                         using (SqlDataReader reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
                             {
-                                list.Add(CreateContactUsFromReader(reader));
+                                list.Add(CreateFromReader(reader));
                             }
                         }
                     }
@@ -56,9 +54,9 @@ namespace Domain.Ecommerce.Model
             return list;
         }
 
-        public async Task PostAsync(ContactUs contactUs)
+        public async Task PostAsync(OrderProduct orderProduct)
         {
-            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_Insert";
 
             try
             {
@@ -69,10 +67,11 @@ namespace Domain.Ecommerce.Model
                         command.CommandType = CommandType.StoredProcedure;
 
                         // Adicionar parâmetros ao comando
-                        command.Parameters.AddWithValue("@Name", contactUs.Name);
-                        command.Parameters.AddWithValue("@Email", contactUs.Email);
-                        command.Parameters.AddWithValue("@CellPhone", contactUs.CellPhone);
-                        command.Parameters.AddWithValue("@Message", contactUs.Message);
+                        command.Parameters.AddWithValue("@IdOrder", orderProduct.IdOrder);
+                        command.Parameters.AddWithValue("@IdProduct", orderProduct.IdProduct);
+                        command.Parameters.AddWithValue("@DateInsert", orderProduct.DateInsert);
+                        command.Parameters.AddWithValue("@DateUpdate", orderProduct.DateUpdate);
+                        command.Parameters.AddWithValue("@Status", orderProduct.Status);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -91,11 +90,11 @@ namespace Domain.Ecommerce.Model
             }
         }
 
-        public async Task<ContactUs> GetByIdAsync(int id)
+        public async Task<OrderProduct> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetById";
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_GetById";
 
-            ContactUs contactUs = null;
+            OrderProduct orderProduct = null;
 
             try
             {
@@ -112,7 +111,7 @@ namespace Domain.Ecommerce.Model
                         {
                             if (await reader.ReadAsync())
                             {
-                                contactUs = CreateContactUsFromReader(reader);
+                                orderProduct = CreateFromReader(reader);
                             }
                         }
                     }
@@ -129,12 +128,12 @@ namespace Domain.Ecommerce.Model
                 throw;
             }
 
-            return contactUs;
+            return orderProduct;
         }
 
-        public async Task PutAsync(ContactUs contactUs)
+        public async Task PutAsync(OrderProduct orderProduct)
         {
-            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Update";
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_Update";
 
             try
             {
@@ -145,7 +144,7 @@ namespace Domain.Ecommerce.Model
                         command.CommandType = CommandType.StoredProcedure;
 
                         // Adicionar apenas os parâmetros necessários
-                        AddContactUsParameters(command, contactUs);
+                        AddParameters(command, orderProduct);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -166,7 +165,7 @@ namespace Domain.Ecommerce.Model
 
         public async Task DeleteAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Delete";
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_Delete";
 
             try
             {
@@ -194,37 +193,32 @@ namespace Domain.Ecommerce.Model
             }
         }
 
-        private ContactUs CreateContactUsFromReader(SqlDataReader reader)
+        private OrderProduct CreateFromReader(SqlDataReader reader)
         {
             for (int i = 0; i < reader.FieldCount; i++)
                 Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
 
-            return new ContactUs
+            return new OrderProduct
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                Name = reader.GetString(reader.GetOrdinal("Name")),
-                Email = reader.GetString(reader.GetOrdinal("Email")),
-                CellPhone = reader.GetString(reader.GetOrdinal("CellPhone")),
-                Message = reader.GetString(reader.GetOrdinal("Message")),
+                IdOrder = reader.GetInt32(reader.GetOrdinal("IdOrder")),
+                IdProduct = reader.GetInt32(reader.GetOrdinal("IdProduct")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
-                Status = reader.GetBoolean(reader.GetOrdinal("Status")) ? Status.Active : Status.Disabled
-
+                Status = (Status)reader.GetInt32(reader.GetOrdinal("Status"))
             };
         }
 
-        private void AddContactUsParameters(SqlCommand command, ContactUs contactUs)
+        private void AddParameters(SqlCommand command, OrderProduct orderProduct)
         {
             var parameters = new (string, object)[]
             {
-                    ("@Id", contactUs.Id),
-                    ("@Name", contactUs.Name),
-                    ("@Email", contactUs.Email),
-                    ("@CellPhone", contactUs.CellPhone),
-                    ("@Message", contactUs.Message),
-                    ("@DateInsert", contactUs.DateInsert),
-                    ("@DateUpdate", contactUs.DateUpdate),
-                    ("@Status", (int)contactUs.Status)
+                    ("@Id", orderProduct.Id),
+                    ("@IdOrder", orderProduct.IdOrder),
+                    ("@IdUser", orderProduct.IdProduct),
+                    ("@DateInsert", orderProduct.DateInsert),
+                    ("@DateUpdate", orderProduct.DateUpdate),
+                    ("@OrderStatus", (OrderStatus)orderProduct.Status)
             };
 
             foreach (var (name, value) in parameters)

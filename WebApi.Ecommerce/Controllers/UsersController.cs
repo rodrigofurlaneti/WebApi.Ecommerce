@@ -1,7 +1,5 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using WebApi.Ecommerce.Data.Interface;
 
 namespace WebApi.Ecommerce.Controllers

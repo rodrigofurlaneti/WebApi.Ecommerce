@@ -1,4 +1,4 @@
-﻿namespace Domain.Ecommerce.Enun
+﻿namespace Domain.Ecommerce.Enum
 {
     public enum OrderStatus
     {

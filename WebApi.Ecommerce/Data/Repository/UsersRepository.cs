@@ -6,6 +6,7 @@ using WebApi.Ecommerce.Data.Interface;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Domain.Ecommerce.Model;
+using Domain.Ecommerce.Enum;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
@@ -203,6 +204,11 @@ namespace WebApi.Ecommerce.Data.Repository
 
         private User CreateUserFromReader(SqlDataReader reader)
         {
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
+            }
+
             return new User
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -220,7 +226,7 @@ namespace WebApi.Ecommerce.Data.Repository
                 Password = reader.GetString(reader.GetOrdinal("Password")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
-                Status = reader.GetBoolean(reader.GetOrdinal("Status"))
+                Status = reader.GetBoolean(reader.GetOrdinal("Status")) ? Status.Active : Status.Disabled
             };
         }
 
@@ -241,7 +247,7 @@ namespace WebApi.Ecommerce.Data.Repository
             command.Parameters.AddWithValue("@Password", user.Password);
             command.Parameters.AddWithValue("@DateInsert", user.DateInsert);
             command.Parameters.AddWithValue("@DateUpdate", user.DateUpdate);
-            command.Parameters.AddWithValue("@Status", user.Status);
+            command.Parameters.AddWithValue("@Status", (int)user.Status);
         }
     }
 }

@@ -2,6 +2,7 @@ using WebApi.Ecommerce.Data.Interface;
 using WebApi.Ecommerce.Data.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
+using Domain.Ecommerce.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,8 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 // Register the UsersRepository
 builder.Services.AddScoped<IContactUsRepository, ContactUsRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();

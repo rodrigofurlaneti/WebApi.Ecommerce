@@ -1,4 +1,4 @@
-﻿using Domain.Ecommerce.Enun;
+﻿using Domain.Ecommerce.Enum;
 
 namespace Domain.Ecommerce.Model
 {
