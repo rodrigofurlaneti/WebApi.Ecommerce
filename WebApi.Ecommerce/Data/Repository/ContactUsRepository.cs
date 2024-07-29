@@ -5,7 +5,7 @@ using System;
 using WebApi.Ecommerce.Data.Interface;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Domain.Ecommerce.Enun;
+using Domain.Ecommerce.Enum;
 
 namespace Domain.Ecommerce.Model
 {
@@ -15,7 +15,9 @@ namespace Domain.Ecommerce.Model
 
         public ContactUsRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Garante que _connectionString seja inicializado corretamente
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
         public async Task<IEnumerable<ContactUs>> GetAsync()
@@ -91,11 +93,11 @@ namespace Domain.Ecommerce.Model
             }
         }
 
-        public async Task<ContactUs> GetByIdAsync(int id)
+        public async Task<ContactUs?> GetByIdAsync(int id)
         {
             string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetById";
 
-            ContactUs contactUs = null;
+            ContactUs? contactUs = null;
 
             try
             {
@@ -215,7 +217,7 @@ namespace Domain.Ecommerce.Model
 
         private void AddContactUsParameters(SqlCommand command, ContactUs contactUs)
         {
-            var parameters = new (string, object)[]
+            var parameters = new (string, object?)[]
             {
                     ("@Id", contactUs.Id),
                     ("@Name", contactUs.Name),

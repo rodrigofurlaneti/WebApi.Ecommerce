@@ -12,7 +12,9 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public ProductRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Garante que _connectionString seja inicializado corretamente
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
         public async Task<IEnumerable<Product>> GetAsync()
@@ -95,11 +97,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<Product> GetByIdAsync(int id)
+        public async Task<Product?> GetByIdAsync(int id)
         {
             string storedProcedureName = "Ecommerce_Procedure_Product_GetById";
 
-            Product product = null;
+            Product? product = null;
 
             try
             {
@@ -221,7 +223,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         private void AddParameters(SqlCommand command, Product product)
         {
-            var parameters = new (string, object)[]
+            var parameters = new (string, object?)[]
             {
                     ("@Id", product.Id),
                     ("@Name", product.Name),

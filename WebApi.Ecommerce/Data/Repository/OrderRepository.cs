@@ -3,6 +3,7 @@ using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using WebApi.Ecommerce.Data.Interface;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
@@ -12,7 +13,9 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public OrderRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Garante que _connectionString seja inicializado corretamente
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
         public async Task<IEnumerable<Order>> GetAsync()
@@ -69,7 +72,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         // Adicionar parâmetros ao comando
                         command.Parameters.AddWithValue("@IdUser", order.User.Id);
                         command.Parameters.AddWithValue("@OrderStatus", order.OrderStatus);
-                      
+
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
                     }
@@ -87,11 +90,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<Order> GetByIdAsync(int id)
+        public async Task<Order?> GetByIdAsync(int id)
         {
             string storedProcedureName = "Ecommerce_Procedure_Order_GetById";
 
-            Order order = null;
+            Order? order = null;
 
             try
             {
@@ -213,7 +216,7 @@ namespace WebApi.Ecommerce.Data.Repository
                     ("@IdUser", order.User.Id),
                     ("@DateInsert", order.DateInsert),
                     ("@DateUpdate", order.DateUpdate),
-                    ("@OrderStatus", (OrderStatus)order.OrderStatus)
+                    ("@OrderStatus", (int)order.OrderStatus)
             };
 
             foreach (var (name, value) in parameters)
@@ -221,7 +224,6 @@ namespace WebApi.Ecommerce.Data.Repository
                 Console.WriteLine($"{name}: {value}");
                 command.Parameters.AddWithValue(name, value);
             }
-
         }
     }
 }

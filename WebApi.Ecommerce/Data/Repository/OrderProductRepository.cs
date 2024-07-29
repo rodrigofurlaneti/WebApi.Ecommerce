@@ -2,16 +2,20 @@
 using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using WebApi.Ecommerce.Data.Interface;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
-    public class OrderProductRepository
+    public class OrderProductRepository : IOrderProductRepository
     {
         private readonly string _connectionString;
 
         public OrderProductRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Garante que _connectionString seja inicializado corretamente
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
         public async Task<IEnumerable<OrderProduct>> GetAsync()
@@ -71,7 +75,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         command.Parameters.AddWithValue("@IdProduct", orderProduct.IdProduct);
                         command.Parameters.AddWithValue("@DateInsert", orderProduct.DateInsert);
                         command.Parameters.AddWithValue("@DateUpdate", orderProduct.DateUpdate);
-                        command.Parameters.AddWithValue("@Status", orderProduct.Status);
+                        command.Parameters.AddWithValue("@Status", (int)orderProduct.Status);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -90,11 +94,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<OrderProduct> GetByIdAsync(int id)
+        public async Task<OrderProduct?> GetByIdAsync(int id)
         {
             string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_GetById";
 
-            OrderProduct orderProduct = null;
+            OrderProduct? orderProduct = null;
 
             try
             {
@@ -205,28 +209,24 @@ namespace WebApi.Ecommerce.Data.Repository
                 IdProduct = reader.GetInt32(reader.GetOrdinal("IdProduct")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
-                Status = (Status)reader.GetInt32(reader.GetOrdinal("Status"))
+                Status = reader.GetBoolean(reader.GetOrdinal("Status")) ? Status.Active : Status.Disabled
             };
         }
 
         private void AddParameters(SqlCommand command, OrderProduct orderProduct)
         {
-            var parameters = new (string, object)[]
-            {
-                    ("@Id", orderProduct.Id),
-                    ("@IdOrder", orderProduct.IdOrder),
-                    ("@IdUser", orderProduct.IdProduct),
-                    ("@DateInsert", orderProduct.DateInsert),
-                    ("@DateUpdate", orderProduct.DateUpdate),
-                    ("@OrderStatus", (OrderStatus)orderProduct.Status)
-            };
+            AddParameter(command, "@Id", orderProduct.Id);
+            AddParameter(command, "@IdOrder", orderProduct.IdOrder);
+            AddParameter(command, "@IdProduct", orderProduct.IdProduct);
+            AddParameter(command, "@DateInsert", orderProduct.DateInsert);
+            AddParameter(command, "@DateUpdate", orderProduct.DateUpdate);
+            AddParameter(command, "@Status", (int)orderProduct.Status);
+        }
 
-            foreach (var (name, value) in parameters)
-            {
-                Console.WriteLine($"{name}: {value}");
-                command.Parameters.AddWithValue(name, value);
-            }
-
+        private void AddParameter(SqlCommand command, string parameterName, object value)
+        {
+            Console.WriteLine($"{parameterName}: {value}");
+            command.Parameters.AddWithValue(parameterName, value);
         }
     }
 }

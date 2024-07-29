@@ -7,7 +7,7 @@ namespace WebApi.Ecommerce.Data.Interface
         Task<IEnumerable<Product>> GetAsync();
         Task PostAsync(Product product);
         Task PutAsync(Product product);
-        Task<Product> GetByIdAsync(int id);
+        Task<Product?> GetByIdAsync(int id);
         Task DeleteAsync(int id);
     }
 }
