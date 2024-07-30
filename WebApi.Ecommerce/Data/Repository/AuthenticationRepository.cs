@@ -61,9 +61,11 @@ namespace WebApi.Ecommerce.Data.Repository
         {
             return new AuthenticationResponse
             {
+                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                Name = reader.GetString(reader.GetOrdinal("Name")),
                 Username = reader.GetString(reader.GetOrdinal("Username")),
                 Password = reader.GetString(reader.GetOrdinal("Password")),
-                Status = reader.GetBoolean(reader.GetOrdinal("Status"))
+                Status = reader.GetBoolean(reader.GetOrdinal("Status")),
             };
         }
     }
