@@ -20,23 +20,25 @@ namespace WebApi.Ecommerce.Controllers
         {
             if (authenticationRequest == null)
             {
-                return BadRequest("Authentication is null");
+                return BadRequest("Authentication request is null");
             }
-            else
-            {
-                // Log para verificar os dados recebidos Authentication Request
-                Console.WriteLine($"Nome do usuário: {authenticationRequest.Username}, senha do usuário: {authenticationRequest.Password}");
 
+            try
+            {
                 var authenticationResponse = await _authenticationRepository.PostAsync(authenticationRequest);
 
-                if (authenticationResponse != null)
-                    // Log para verificar os dados recebidos Authentication Response
-                    Console.WriteLine($"Status do usuário: {authenticationResponse.Status}");
-
                 if (authenticationResponse == null)
+                {
                     return Unauthorized();
-                else
-                    return Ok(authenticationResponse);
+                }
+
+                return Ok(authenticationResponse);
+            }
+            catch (Exception ex)
+            {
+                // Log de erro
+                Console.Error.WriteLine($"Erro durante a autenticação: {ex.Message}");
+                return StatusCode(500, "Internal server error");
             }
         }
     }
