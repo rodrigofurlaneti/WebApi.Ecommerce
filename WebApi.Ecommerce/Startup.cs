@@ -33,11 +33,12 @@ namespace WebApi.Ecommerce
             services.AddControllers();
 
             // Register the repositories
+            services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
             services.AddScoped<IContactUsRepository, ContactUsRepository>();
-            services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IOrderProductRepository, OrderProductRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IUsersRepository, UsersRepository>();
 
             // Add Swagger services
             services.AddEndpointsApiExplorer();
