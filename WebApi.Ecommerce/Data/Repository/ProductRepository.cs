@@ -70,15 +70,13 @@ namespace WebApi.Ecommerce.Data.Repository
 
                         // Adicionar parâmetros ao comando
                         command.Parameters.AddWithValue("@Name", product.Name);
-                        command.Parameters.AddWithValue("@Details", product.Details);
                         command.Parameters.AddWithValue("@Amount", product.Amount);
-                        command.Parameters.AddWithValue("@Image", product.Image);
+                        command.Parameters.AddWithValue("@Details", product.Details);
+                        command.Parameters.AddWithValue("@Picture", product.Picture);
                         command.Parameters.AddWithValue("@ValueOf", product.ValueOf);
                         command.Parameters.AddWithValue("@ValueFor", product.ValueFor);
                         command.Parameters.AddWithValue("@Discount", product.Discount);
-                        command.Parameters.AddWithValue("@DateInsert", product.DateInsert);
-                        command.Parameters.AddWithValue("@DateUpdate", product.DateUpdate);
-                        command.Parameters.AddWithValue("@ProductStatus", product.ProductStatus);
+                        command.Parameters.AddWithValue("@ProductStatus", (int)product.ProductStatus);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -209,12 +207,12 @@ namespace WebApi.Ecommerce.Data.Repository
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 Name = reader.GetString(reader.GetOrdinal("Name")),
-                Details = reader.GetString(reader.GetOrdinal("Details")),
                 Amount = reader.GetInt32(reader.GetOrdinal("Amount")),
-                Image = reader.GetString(reader.GetOrdinal("Image")),
-                ValueOf = reader.GetDouble(reader.GetOrdinal("ValueOf")),
-                ValueFor = reader.GetDouble(reader.GetOrdinal("ValueFor")),
-                Discount = reader.GetDouble(reader.GetOrdinal("Discount")),
+                Details = reader.GetString(reader.GetOrdinal("Details")),
+                Picture = reader.GetString(reader.GetOrdinal("Picture")),
+                ValueOf = reader.GetDecimal(reader.GetOrdinal("ValueOf")),
+                ValueFor = reader.GetDecimal(reader.GetOrdinal("ValueFor")),
+                Discount = reader.GetDecimal(reader.GetOrdinal("Discount")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
                 ProductStatus = (ProductStatus)reader.GetInt32(reader.GetOrdinal("ProductStatus"))
@@ -227,9 +225,9 @@ namespace WebApi.Ecommerce.Data.Repository
             {
                     ("@Id", product.Id),
                     ("@Name", product.Name),
-                    ("@Details", product.Details),
                     ("@Amount", product.Amount),
-                    ("@Image", product.Image),
+                    ("@Details", product.Details),
+                    ("@Picture", product.Picture),
                     ("@ValueOf", product.ValueOf),
                     ("@ValueFor", product.ValueFor),
                     ("@ValueOf", product.ValueOf),

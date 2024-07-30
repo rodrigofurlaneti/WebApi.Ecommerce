@@ -17,7 +17,7 @@ namespace WebApi.Ecommerce.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> Get()
         {
             var product = await _productRepository.GetAsync();
             return Ok(product);
@@ -37,17 +37,24 @@ namespace WebApi.Ecommerce.Controllers
             return Ok(user);
         }
 
-        // POST: api/Products
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product user)
+        public async Task<ActionResult<Product>> Post([FromBody] Product product)
         {
-            await _productRepository.PostAsync(user);
-            return CreatedAtAction(nameof(GetProduct), new { id = user.Id }, user);
+            if (product == null)
+            {
+                return BadRequest("Product is null");
+            }
+
+            // Log para verificar os dados recebidos
+            Console.WriteLine($"Nome do Produto: {product.Name}, Quantidade: {product.Amount}, Foto: {product.Picture}");
+
+            await _productRepository.PostAsync(product);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product user)
+        public async Task<IActionResult> Put(int id, Product user)
         {
             if (id != user.Id)
             {
@@ -60,7 +67,7 @@ namespace WebApi.Ecommerce.Controllers
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var user = await _productRepository.GetByIdAsync(id);
 
