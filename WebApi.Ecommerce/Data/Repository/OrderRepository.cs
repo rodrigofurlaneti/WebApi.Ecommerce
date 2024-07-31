@@ -3,7 +3,6 @@ using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using WebApi.Ecommerce.Data.Interface;
-using Microsoft.Extensions.Configuration;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
@@ -13,7 +12,6 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public OrderRepository(IConfiguration configuration)
         {
-            // Garante que _connectionString seja inicializado corretamente
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
@@ -21,7 +19,6 @@ namespace WebApi.Ecommerce.Data.Repository
         public async Task<IEnumerable<Order>> GetAsync()
         {
             List<Order> list = new List<Order>();
-
             string storedProcedureName = "Ecommerce_Procedure_Order_GetAll";
 
             try
@@ -57,7 +54,7 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(Order order)
+        public async Task<int> PostAsync(Order order)
         {
             string storedProcedureName = "Ecommerce_Procedure_Order_Insert";
 
@@ -69,12 +66,23 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        // Adicionar parâmetros ao comando
                         command.Parameters.AddWithValue("@IdUser", order.User.Id);
-                        command.Parameters.AddWithValue("@OrderStatus", order.OrderStatus);
+                        command.Parameters.AddWithValue("@IdProduct", order.Product.Id);
+                        command.Parameters.AddWithValue("@Amount", order.Product.Amount);
+                        command.Parameters.AddWithValue("@IdOrder", order.Id);
 
                         await connection.OpenAsync();
-                        await command.ExecuteNonQueryAsync();
+
+                        var result = await command.ExecuteScalarAsync();
+
+                        if (result != null && int.TryParse(result.ToString(), out int orderId))
+                        {
+                            return orderId;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to retrieve the new order ID.");
+                        }
                     }
                 }
             }
@@ -92,8 +100,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public async Task<Order?> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Order_GetById";
-
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_GetById";
             Order? order = null;
 
             try
@@ -131,6 +138,46 @@ namespace WebApi.Ecommerce.Data.Repository
             return order;
         }
 
+        public async Task<int> GetProductCountByOrderIdAsync(int orderId)
+        {
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_CountById";
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    using (SqlCommand command = new SqlCommand(storedProcedureName, connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@IdOrder", orderId);
+
+                        await connection.OpenAsync();
+
+                        var result = await command.ExecuteScalarAsync();
+
+                        if (result != null && int.TryParse(result.ToString(), out int productCount))
+                        {
+                            return productCount;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to retrieve the product count.");
+                        }
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.Error.WriteLine($"Erro de SQL: {sqlEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro: {ex.Message}");
+                throw;
+            }
+        }
+
         public async Task PutAsync(Order order)
         {
             string storedProcedureName = "Ecommerce_Procedure_Order_Update";
@@ -143,7 +190,6 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        // Adicionar apenas os parâmetros necessários
                         AddParameters(command, order);
 
                         await connection.OpenAsync();
@@ -195,9 +241,6 @@ namespace WebApi.Ecommerce.Data.Repository
 
         private Order CreateFromReader(SqlDataReader reader)
         {
-            for (int i = 0; i < reader.FieldCount; i++)
-                Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
-
             return new Order
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -210,20 +253,11 @@ namespace WebApi.Ecommerce.Data.Repository
 
         private void AddParameters(SqlCommand command, Order order)
         {
-            var parameters = new (string, object)[]
-            {
-                    ("@Id", order.Id),
-                    ("@IdUser", order.User.Id),
-                    ("@DateInsert", order.DateInsert),
-                    ("@DateUpdate", order.DateUpdate),
-                    ("@OrderStatus", (int)order.OrderStatus)
-            };
-
-            foreach (var (name, value) in parameters)
-            {
-                Console.WriteLine($"{name}: {value}");
-                command.Parameters.AddWithValue(name, value);
-            }
+            command.Parameters.AddWithValue("@Id", order.Id);
+            command.Parameters.AddWithValue("@IdUser", order.User.Id);
+            command.Parameters.AddWithValue("@DateInsert", order.DateInsert);
+            command.Parameters.AddWithValue("@DateUpdate", order.DateUpdate);
+            command.Parameters.AddWithValue("@OrderStatus", (int)order.OrderStatus);
         }
     }
 }

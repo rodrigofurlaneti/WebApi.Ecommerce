@@ -1,6 +1,8 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Ecommerce.Data.Interface;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WebApi.Ecommerce.Controllers
 {
@@ -15,61 +17,74 @@ namespace WebApi.Ecommerce.Controllers
             _orderRepository = orderRepository;
         }
 
-        // GET: api/Orders
+        // GET: api/Order
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
         {
-            var order = await _orderRepository.GetAsync();
-            return Ok(order);
+            var orders = await _orderRepository.GetAsync();
+            return Ok(orders);
         }
 
-        // GET: api/Orders/5
+        // GET: api/Order/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrder(int id)
+        public async Task<ActionResult<int>> Get(int id)
         {
-            var user = await _orderRepository.GetByIdAsync(id);
+            var countProduct = await _orderRepository.GetProductCountByOrderIdAsync(id);
 
-            if (user == null)
+            if (countProduct == null)
             {
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(countProduct);
         }
 
-        // POST: api/Orders
+        // POST: api/Order
         [HttpPost]
-        public async Task<ActionResult<Order>> PostOrder(Order user)
+        public async Task<ActionResult<Order>> Post(OrderRequest orderRequest)
         {
-            await _orderRepository.PostAsync(user);
-            return CreatedAtAction(nameof(GetOrder), new { id = user.Id }, user);
+            var order = new Order()
+            {
+                Id = orderRequest.orderId,
+                User = new User() { Id = orderRequest.userId },
+                Product = new Product() { Id = orderRequest.productId, Amount = orderRequest.amount }
+            };
+
+            var result = await _orderRepository.PostAsync(order);
+
+            if (result != null && int.TryParse(result.ToString(), out int orderId))
+            {
+                order.Id = orderId;
+            }
+
+            return CreatedAtAction(nameof(Get), new { id = order.Id }, order);
         }
 
-        // PUT: api/Orders/5
+        // PUT: api/Order/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder(int id, Order user)
+        public async Task<IActionResult> PutOrder(int id, Order order)
         {
-            if (id != user.Id)
+            if (id != order.Id)
             {
                 return BadRequest();
             }
 
-            await _orderRepository.PutAsync(user);
+            await _orderRepository.PutAsync(order);
             return NoContent();
         }
 
-        // DELETE: api/Orders/5
+        // DELETE: api/Order/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
-            var user = await _orderRepository.GetByIdAsync(id);
+            var order = await _orderRepository.GetByIdAsync(id);
 
-            if (user == null)
+            if (order == null)
             {
                 return NotFound();
             }
 
-            await _orderRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
+            await _orderRepository.DeleteAsync(id);
             return NoContent();
         }
     }
