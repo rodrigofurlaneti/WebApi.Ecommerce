@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using WebApi.Ecommerce.Data.Interface;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace WebApi.Ecommerce.Data.Repository
 {
@@ -58,9 +59,11 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(OrderProduct orderProduct)
+        public async Task<List<OrderProductResponse>> PostAsync(OrderProductRequest orderProductRequest)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_Order_X_Product_GetByOrderId";
+
+            List<OrderProductResponse> listOrderProductResponse = new List<OrderProductResponse>();
 
             try
             {
@@ -71,14 +74,37 @@ namespace WebApi.Ecommerce.Data.Repository
                         command.CommandType = CommandType.StoredProcedure;
 
                         // Adicionar parâmetros ao comando
-                        command.Parameters.AddWithValue("@IdOrder", orderProduct.IdOrder);
-                        command.Parameters.AddWithValue("@IdProduct", orderProduct.IdProduct);
-                        command.Parameters.AddWithValue("@DateInsert", orderProduct.DateInsert);
-                        command.Parameters.AddWithValue("@DateUpdate", orderProduct.DateUpdate);
-                        command.Parameters.AddWithValue("@Status", (int)orderProduct.Status);
+                        command.Parameters.AddWithValue("@IdOrder", orderProductRequest.IdOrder);
 
                         await connection.OpenAsync();
-                        await command.ExecuteNonQueryAsync();
+
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                OrderProductResponse response = new OrderProductResponse
+                                {
+                                    Product = new List<Product>
+                                    {
+                                        new Product
+                                        {
+                                            Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                            Name = reader.GetString(reader.GetOrdinal("ProductName")),
+                                            Details = reader.GetString(reader.GetOrdinal("ProductDetails")),
+                                            Amount = reader.GetInt32(reader.GetOrdinal("OrderProductAmount")),
+                                            Picture = reader.GetString(reader.GetOrdinal("ProductPicture")),
+                                            ValueOf = reader.GetDecimal(reader.GetOrdinal("ProductValueOf")),
+                                            ValueFor = reader.GetDecimal(reader.GetOrdinal("ProductValueFor")),
+                                            Discount = reader.GetDecimal(reader.GetOrdinal("ProductDiscount")),
+                                            DateInsert = reader.GetDateTime(reader.GetOrdinal("ProductDateInsert")),
+                                            DateUpdate = reader.GetDateTime(reader.GetOrdinal("ProductDateUpdate")),
+                                            // Outros campos da tabela de produtos
+                                        }
+                                    }
+                                };
+                                listOrderProductResponse.Add(response);
+                            }
+                        }
                     }
                 }
             }
@@ -92,6 +118,8 @@ namespace WebApi.Ecommerce.Data.Repository
                 Console.Error.WriteLine($"Erro: {ex.Message}");
                 throw;
             }
+
+            return listOrderProductResponse;
         }
 
         public async Task<OrderProduct?> GetByIdAsync(int id)

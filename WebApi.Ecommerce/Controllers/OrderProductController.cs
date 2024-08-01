@@ -1,5 +1,6 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using WebApi.Ecommerce.Data.Interface;
 
 namespace WebApi.Ecommerce.Controllers
@@ -23,26 +24,47 @@ namespace WebApi.Ecommerce.Controllers
             return Ok(orderProduct);
         }
 
-        // GET: api/OrderProducts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderProduct>> GetOrderProduct(int id)
+        public async Task<ActionResult<OrderProductResponse>> GetOrderProduct(int id)
         {
-            var user = await _orderProductRepository.GetByIdAsync(id);
+            var orderProductResponse = await _orderProductRepository.GetByIdAsync(id);
 
-            if (user == null)
+            if (orderProductResponse == null)
             {
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(orderProductResponse);
         }
 
-        // POST: api/OrderProducts
         [HttpPost]
-        public async Task<ActionResult<OrderProduct>> PostOrderProduct(OrderProduct user)
+        public async Task<IActionResult> PostOrderProduct([FromBody] OrderProductRequest orderProductRequest)
         {
-            await _orderProductRepository.PostAsync(user);
-            return CreatedAtAction(nameof(GetOrderProduct), new { id = user.Id }, user);
+            var orderProductResponses = await _orderProductRepository.PostAsync(orderProductRequest);
+
+            if (orderProductResponses == null || !orderProductResponses.Any())
+            {
+                return NotFound();
+            }
+
+            var orderProductResponseDTOs = orderProductResponses.SelectMany(opr => opr.Product.Select(p => new OrderProductResponseDTO
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Amount = p.Amount,
+                Details = p.Details,
+                Picture = p.Picture,
+                ValueFor = p.ValueFor
+            })).ToList();
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var jsonResponse = JsonSerializer.Serialize(orderProductResponseDTOs, jsonOptions);
+
+            return Ok(jsonResponse);
         }
 
         // PUT: api/OrderProducts/5
