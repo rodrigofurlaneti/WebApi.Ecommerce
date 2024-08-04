@@ -33,6 +33,7 @@ namespace WebApi.Ecommerce
             services.AddControllers();
 
             // Register the repositories
+            services.AddScoped<IAccessLogRepository, AccessLogRepository>();
             services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
             services.AddScoped<IContactUsRepository, ContactUsRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
