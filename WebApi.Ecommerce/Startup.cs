@@ -17,6 +17,8 @@ namespace WebApi.Ecommerce
         // Este método é chamado pelo runtime. Use este método para adicionar serviços ao contêiner.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpClient(); 
+
             // Adiciona o serviço CORS
             services.AddCors(options =>
             {
@@ -36,6 +38,7 @@ namespace WebApi.Ecommerce
             services.AddScoped<IAccessLogRepository, AccessLogRepository>();
             services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
             services.AddScoped<IContactUsRepository, ContactUsRepository>();
+            services.AddScoped<IGeolocationRepository, GeolocationRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IOrderProductRepository, OrderProductRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();

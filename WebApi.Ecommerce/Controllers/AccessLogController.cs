@@ -1,5 +1,7 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Text.Json;
 using WebApi.Ecommerce.Data.Interface;
 
 namespace WebApi.Ecommerce.Controllers
@@ -9,10 +11,15 @@ namespace WebApi.Ecommerce.Controllers
     public class AccessLogController : ControllerBase
     {
         private readonly IAccessLogRepository _accessLogRepository;
+        private readonly IGeolocationRepository _geolocatioRepository;
+        private readonly HttpClient _httpClient;
 
-        public AccessLogController(IAccessLogRepository accessLogRepository)
+        public AccessLogController(IAccessLogRepository accessLogRepository, 
+            IGeolocationRepository geolocatioRepository, HttpClient httpClient)
         {
             _accessLogRepository = accessLogRepository;
+            _geolocatioRepository = geolocatioRepository;
+            _httpClient = httpClient;
         }
 
         // GET: api/AccessLogs
@@ -49,6 +56,41 @@ namespace WebApi.Ecommerce.Controllers
             Console.WriteLine($"Latitude: {accessLog.Latitude}, Longitude: {accessLog.Longitude}, IP: {accessLog.InternetProtocol}");
 
             await _accessLogRepository.PostAsync(accessLog);
+
+            var api_key = "66b12b35d8ae3445384266iqodc7c89";
+            var apiUrl = $"https://geocode.maps.co/reverse?lat={accessLog.Latitude}&lon={accessLog.Longitude}&api_key={api_key}";
+
+            Place place = null;
+            try
+            {
+                var response = await _httpClient.GetAsync(apiUrl);
+                response.EnsureSuccessStatusCode();
+
+                var responseBody = await response.Content.ReadAsStringAsync();
+                place = JsonSerializer.Deserialize<Place>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                // Verifique se todos os campos obrigatórios estão preenchidos
+                if (place != null)
+                {
+                    // Preencha qualquer campo obrigatório que esteja faltando
+                    // Supondo que o PlaceId seja gerado automaticamente no banco de dados
+                    await _geolocatioRepository.PostAsync(place);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                Console.Error.WriteLine($"Request error: {e.Message}");
+                return StatusCode(500, "Error fetching geolocation data");
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error: {e.Message}");
+                return StatusCode(500, "Error processing geolocation data");
+            }
+
             return CreatedAtAction(nameof(GetAccessLog), new { id = accessLog.Id }, accessLog);
         }
 
