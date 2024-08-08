@@ -5,7 +5,7 @@ using Domain.Ecommerce.Converters;
 using FluentAssertions;
 using Xunit;
 
-namespace Domain.Ecommerce.Tests.Converters
+namespace Test.Ecommerce.Domain.Converters.DateTimeConverterTests
 {
     public class DateTimeConverterTests
     {

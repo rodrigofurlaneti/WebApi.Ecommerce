@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Converters
+namespace Test.Ecommerce.Domain.Converters.DecimalConverterTests
 {
     public class DecimalConverterTests
     {

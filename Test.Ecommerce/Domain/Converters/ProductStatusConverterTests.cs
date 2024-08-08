@@ -5,7 +5,7 @@ using Domain.Ecommerce.Enum;
 using FluentAssertions;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Converters
+namespace Test.Ecommerce.Domain.Converters.ProductStatusConverterTests
 {
     public class ProductStatusConverterTests
     {
@@ -63,27 +63,5 @@ namespace Test.Ecommerce.Domain.Converters
             // Assert
             status.Should().Be(expectedStatus);
         }
-
-        //[Fact]
-        //public void Deve_DesserializarStatusDoProduto_ComStringInvalida_LancarJsonException()
-        //{
-        //    // Arrange
-        //    var json = "\"NotAvailable\"";
-        //    Action act = () => JsonSerializer.Deserialize<ProductStatus>(json, _options);
-
-        //    // Act & Assert
-        //    act.Should().Throw<JsonException>().WithMessage("Unable to convert \"NotAvailable\" to Domain.Ecommerce.Enum.ProductStatus");
-        //}
-
-        //[Fact]
-        //public void Deve_DesserializarStatusDoProduto_ComNumeroInvalido_LancarJsonException()
-        //{
-        //    // Arrange
-        //    var json = "999"; // Assuming 999 is not a valid ProductStatus value
-        //    Action act = () => JsonSerializer.Deserialize<ProductStatus>(json, _options);
-
-        //    // Act & Assert
-        //    act.Should().Throw<JsonException>().WithMessage("Unable to convert \"999\" to Domain.Ecommerce.Enum.ProductStatus");
-        //}
     }
 }
