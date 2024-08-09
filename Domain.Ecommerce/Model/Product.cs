@@ -1,6 +1,4 @@
-﻿using Domain.Ecommerce.Converters;
-using Domain.Ecommerce.Enum;
-using System.ComponentModel;
+﻿using Domain.Ecommerce.Enum;
 using System.Text.Json.Serialization;
 
 namespace Domain.Ecommerce.Model
@@ -8,19 +6,19 @@ namespace Domain.Ecommerce.Model
     public class Product
     {
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public int? Id { get; set; } = default(int?);
 
         [JsonPropertyName("name")]
-        public string? Name { get; set; }
+        public string? Name { get; set; } = string.Empty;
 
         [JsonPropertyName("amount")]
-        public int Amount { get; set; }
+        public int? Amount { get; set; } = default(int?);
 
         [JsonPropertyName("details")]
-        public string? Details { get; set; }
+        public string? Details { get; set; } = string.Empty;
 
         [JsonPropertyName("picture")]
-        public string? Picture { get; set; }
+        public string? Picture { get; set; } = string.Empty;
 
         [JsonPropertyName("valueOf")]
         [JsonConverter(typeof(Domain.Ecommerce.Converters.DecimalConverter))]

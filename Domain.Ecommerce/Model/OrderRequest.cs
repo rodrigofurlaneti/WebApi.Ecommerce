@@ -2,9 +2,9 @@
 {
     public class OrderRequest
     {
-        public int productId { get; set; }
-        public int userId { get; set; }
-        public int amount { get; set; }
-        public int orderId { get; set; }
+        public int? productId { get; set; } = 0;
+        public int? userId { get; set; } = 0;
+        public int? amount { get; set; } = 0;
+        public int? orderId { get; set; } = 0;
     }
 }

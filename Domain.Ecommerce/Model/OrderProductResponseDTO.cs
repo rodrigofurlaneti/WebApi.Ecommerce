@@ -2,11 +2,11 @@
 {
     public class OrderProductResponseDTO
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int Amount { get; set; }
-        public string Details { get; set; }
-        public string Picture { get; set; }
+        public int? Id { get; set; } = 0;
+        public string? Name { get; set; } = string.Empty;
+        public int? Amount { get; set; } = 0;
+        public string? Details { get; set; } = string.Empty;
+        public string? Picture { get; set; } = string.Empty;
         public decimal ValueFor { get; set; }
     }
 }

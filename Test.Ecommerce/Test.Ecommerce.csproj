@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\Model\" />
     <Folder Include="WebApi\Controllers\" />
     <Folder Include="WebApi\Data\" />
     <Folder Include="WebApi\Extensions\" />
