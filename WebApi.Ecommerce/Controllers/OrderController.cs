@@ -27,7 +27,7 @@ namespace WebApi.Ecommerce.Controllers
 
         // GET: api/Order/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<int>> Get(int id)
+        public async Task<ActionResult<int?>> Get(int id)
         {
             var countProduct = await _orderRepository.GetProductCountByOrderIdAsync(id);
 
@@ -41,7 +41,7 @@ namespace WebApi.Ecommerce.Controllers
 
         // POST: api/Order
         [HttpPost]
-        public async Task<ActionResult<Order>> Post(OrderRequest orderRequest)
+        public async Task<ActionResult<Order?>> Post(OrderRequest orderRequest)
         {
             var order = new Order()
             {

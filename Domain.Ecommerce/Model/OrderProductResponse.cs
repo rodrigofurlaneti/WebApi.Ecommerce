@@ -2,6 +2,6 @@
 {
     public class OrderProductResponse
     {
-        public List<Product> Product { get; set; }
+        public List<Product>? Product { get; set; } = new List<Product>();
     }
 }

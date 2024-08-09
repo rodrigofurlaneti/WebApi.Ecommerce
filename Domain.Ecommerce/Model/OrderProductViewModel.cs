@@ -2,6 +2,6 @@
 {
     public class OrderProductViewModel
     {
-        public List<OrderProductResponseDTO>? Products { get; set; } = new List<OrderProductResponseDTO>();
+        public List<OrderProductResponseDto>? Products { get; set; } = new List<OrderProductResponseDto>();
     }
 }

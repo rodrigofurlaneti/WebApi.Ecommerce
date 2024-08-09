@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.OrderProductResponseDTOTests
 {
     public class OrderProductResponseDTOTests
     {
@@ -9,7 +10,7 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemTerValoresPadraoCorretos()
         {
             // Arrange
-            var orderProductResponseDTO = new OrderProductResponseDTO();
+            var orderProductResponseDTO = new OrderProductResponseDto();
 
             // Act & Assert
             Assert.Equal(0, orderProductResponseDTO.Id);
@@ -24,15 +25,15 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var orderProductResponseDTO = new OrderProductResponseDTO
-            {
-                Id = 123,
-                Name = "Product Name",
-                Amount = 10,
-                Details = "Product Details",
-                Picture = "http://example.com/picture.jpg",
-                ValueFor = 99.99m
-            };
+            var fixture = new Fixture(); // Cria uma instância do AutoFixture
+            var orderProductResponseDTO = fixture.Build<OrderProductResponseDto>()
+                                                  .With(op => op.Id, 123)
+                                                  .With(op => op.Name, "Product Name")
+                                                  .With(op => op.Amount, 10)
+                                                  .With(op => op.Details, "Product Details")
+                                                  .With(op => op.Picture, "http://example.com/picture.jpg")
+                                                  .With(op => op.ValueFor, 99.99m)
+                                                  .Create();
 
             // Act & Assert
             Assert.Equal(123, orderProductResponseDTO.Id);
@@ -47,7 +48,8 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var orderProductResponseDTO = new OrderProductResponseDTO();
+            var fixture = new Fixture();
+            var orderProductResponseDTO = fixture.Create<OrderProductResponseDto>();
 
             // Act & Assert
             Assert.IsType<int>(orderProductResponseDTO.Id);

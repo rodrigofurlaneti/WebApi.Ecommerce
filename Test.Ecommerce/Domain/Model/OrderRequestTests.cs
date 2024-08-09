@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.OrderRequestTests
 {
     public class OrderRequestTests
     {
@@ -22,13 +23,13 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var orderRequest = new OrderRequest
-            {
-                productId = 123,
-                userId = 456,
-                amount = 2,
-                orderId = 789
-            };
+            var fixture = new Fixture(); // Cria uma instância do AutoFixture
+            var orderRequest = fixture.Build<OrderRequest>()
+                                      .With(o => o.productId, 123)
+                                      .With(o => o.userId, 456)
+                                      .With(o => o.amount, 2)
+                                      .With(o => o.orderId, 789)
+                                      .Create();
 
             // Act & Assert
             Assert.Equal(123, orderRequest.productId);
@@ -41,13 +42,13 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemAceitarEManterValorNulo()
         {
             // Arrange
-            var orderRequest = new OrderRequest
-            {
-                productId = null,
-                userId = null,
-                amount = null,
-                orderId = null
-            };
+            var fixture = new Fixture();
+            var orderRequest = fixture.Build<OrderRequest>()
+                                      .With(o => o.productId, (int?)null)
+                                      .With(o => o.userId, (int?)null)
+                                      .With(o => o.amount, (int?)null)
+                                      .With(o => o.orderId, (int?)null)
+                                      .Create();
 
             // Act & Assert
             Assert.Null(orderRequest.productId);

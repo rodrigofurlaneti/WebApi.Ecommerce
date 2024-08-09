@@ -47,15 +47,17 @@ namespace WebApi.Ecommerce.Controllers
                 return NotFound();
             }
 
-            var orderProductResponseDTOs = orderProductResponses.SelectMany(opr => opr.Product.Select(p => new OrderProductResponseDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Amount = p.Amount,
-                Details = p.Details,
-                Picture = p.Picture,
-                ValueFor = p.ValueFor
-            })).ToList();
+            var orderProductResponseDTOs = orderProductResponses
+                .SelectMany(opr => opr.Product?.Select(p => new OrderProductResponseDto
+                {
+                    Id = p?.Id ?? 0,
+                    Name = p?.Name ?? string.Empty,
+                    Amount = p?.Amount ?? 0,
+                    Details = p?.Details ?? string.Empty,
+                    Picture = p?.Picture ?? string.Empty,
+                    ValueFor = p?.ValueFor ?? 0m
+                }) ?? Enumerable.Empty<OrderProductResponseDto>())
+                .ToList();
 
             var jsonOptions = new JsonSerializerOptions
             {

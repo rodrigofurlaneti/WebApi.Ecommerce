@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.OrderProductRequestTests
 {
     public class OrderProductRequestTests
     {
@@ -19,10 +20,10 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var orderProductRequest = new OrderProductRequest
-            {
-                IdOrder = 456
-            };
+            var fixture = new Fixture(); // Cria uma instância do AutoFixture
+            var orderProductRequest = fixture.Build<OrderProductRequest>()
+                                             .With(opr => opr.IdOrder, 456)
+                                             .Create();
 
             // Act & Assert
             Assert.Equal(456, orderProductRequest.IdOrder);
@@ -32,7 +33,8 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var orderProductRequest = new OrderProductRequest();
+            var fixture = new Fixture();
+            var orderProductRequest = fixture.Create<OrderProductRequest>();
 
             // Act & Assert
             Assert.IsType<int>(orderProductRequest.IdOrder);

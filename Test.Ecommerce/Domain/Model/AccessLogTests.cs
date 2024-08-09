@@ -1,4 +1,5 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
 namespace Test.Ecommerce.Domain.Model.AccessLogTests
@@ -9,7 +10,8 @@ namespace Test.Ecommerce.Domain.Model.AccessLogTests
         public void Propriedades_DevemTerOsTiposCorretos()
         {
             // Arrange
-            var accessLog = new AccessLog();
+            var fixture = new Fixture();
+            var accessLog = fixture.Create<AccessLog>();
 
             // Act & Assert
             Assert.IsType<int>(accessLog.Id);
@@ -24,13 +26,13 @@ namespace Test.Ecommerce.Domain.Model.AccessLogTests
         public void Propriedades_DevemAceitarValoresNulos()
         {
             // Arrange
-            var accessLog = new AccessLog
-            {
-                Latitude = null,
-                Longitude = null,
-                InternetProtocol = null,
-                UserAgent = null
-            };
+            var fixture = new Fixture();
+            var accessLog = fixture.Build<AccessLog>()
+                                   .With(al => al.Latitude, (string?)null)
+                                   .With(al => al.Longitude, (string?)null)
+                                   .With(al => al.InternetProtocol, (string?)null)
+                                   .With(al => al.UserAgent, (string?)null)
+                                   .Create();
 
             // Act & Assert
             Assert.Null(accessLog.Latitude);
@@ -57,21 +59,24 @@ namespace Test.Ecommerce.Domain.Model.AccessLogTests
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var accessLog = new AccessLog
+            var fixture = new Fixture();
+            var accessLogDinamico = fixture.Build<AccessLog>().Create();
+
+            var accessLogManual = new AccessLog
             {
-                Latitude = "45.0",
-                Longitude = "-75.0",
-                InternetProtocol = "192.168.1.1",
-                UserAgent = "Mozilla/5.0",
-                DateInsert = new DateTime(2023, 1, 1)
+                Latitude = accessLogDinamico.Latitude,
+                Longitude = accessLogDinamico.Longitude,
+                InternetProtocol = accessLogDinamico.InternetProtocol,
+                UserAgent = accessLogDinamico.UserAgent,
+                DateInsert = accessLogDinamico.DateInsert
             };
 
             // Act & Assert
-            Assert.Equal("45.0", accessLog.Latitude);
-            Assert.Equal("-75.0", accessLog.Longitude);
-            Assert.Equal("192.168.1.1", accessLog.InternetProtocol);
-            Assert.Equal("Mozilla/5.0", accessLog.UserAgent);
-            Assert.Equal(new DateTime(2023, 1, 1), accessLog.DateInsert);
+            Assert.Equal(accessLogDinamico.Latitude, accessLogManual.Latitude);
+            Assert.Equal(accessLogDinamico.Longitude, accessLogManual.Longitude);
+            Assert.Equal(accessLogDinamico.InternetProtocol, accessLogManual.InternetProtocol);
+            Assert.Equal(accessLogDinamico.UserAgent, accessLogManual.UserAgent);
+            Assert.Equal(accessLogDinamico.DateInsert, accessLogManual.DateInsert);
         }
     }
 }

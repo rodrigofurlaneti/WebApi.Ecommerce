@@ -1,30 +1,12 @@
-﻿using Domain.Ecommerce.Enum;
+﻿using AutoFixture;
+using Domain.Ecommerce.Enum;
 using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.ContactUsTests
 {
     public class ContactUsTests
     {
-        [Fact]
-        public void Propriedades_DevemAceitarValoresNulos()
-        {
-            // Arrange
-            var contactUs = new ContactUs
-            {
-                Name = null,
-                Email = null,
-                CellPhone = null,
-                Message = null
-            };
-
-            // Act & Assert
-            Assert.Null(contactUs.Name);
-            Assert.Null(contactUs.Email);
-            Assert.Null(contactUs.CellPhone);
-            Assert.Null(contactUs.Message);
-        }
-
         [Fact]
         public void Propriedades_DevemTerValoresPadraoCorretos()
         {
@@ -32,6 +14,7 @@ namespace Test.Ecommerce.Domain.Model
             var contactUs = new ContactUs();
 
             // Act & Assert
+            Assert.Equal(0, contactUs.Id);
             Assert.Equal(string.Empty, contactUs.Name);
             Assert.Equal(string.Empty, contactUs.Email);
             Assert.Equal(string.Empty, contactUs.CellPhone);
@@ -42,37 +25,60 @@ namespace Test.Ecommerce.Domain.Model
         }
 
         [Fact]
-        public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
+        public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao_GerandoValoresDinamicos()
         {
             // Arrange
-            var contactUs = new ContactUs
+            var fixture = new Fixture();
+            var contactUsDinamico = fixture.Build<ContactUs>().Create();
+
+            var contactUsManual = new ContactUs
             {
-                Id = 123,
-                Name = "John Doe",
-                Email = "john.doe@example.com",
-                CellPhone = "123-456-7890",
-                Message = "Hello, I need help!",
-                DateInsert = new DateTime(2023, 1, 1),
-                DateUpdate = new DateTime(2023, 1, 2),
-                Status = Status.Active // Supondo que 'Active' é um valor válido no enum 'Status'
+                Id = contactUsDinamico.Id,
+                Name = contactUsDinamico.Name,
+                Email = contactUsDinamico.Email,
+                CellPhone = contactUsDinamico.CellPhone,
+                Message = contactUsDinamico.Message,
+                DateInsert = contactUsDinamico.DateInsert,
+                DateUpdate = contactUsDinamico.DateUpdate,
+                Status = contactUsDinamico.Status
             };
 
             // Act & Assert
-            Assert.Equal(123, contactUs.Id);
-            Assert.Equal("John Doe", contactUs.Name);
-            Assert.Equal("john.doe@example.com", contactUs.Email);
-            Assert.Equal("123-456-7890", contactUs.CellPhone);
-            Assert.Equal("Hello, I need help!", contactUs.Message);
-            Assert.Equal(new DateTime(2023, 1, 1), contactUs.DateInsert);
-            Assert.Equal(new DateTime(2023, 1, 2), contactUs.DateUpdate);
-            Assert.Equal(Status.Active, contactUs.Status);
+            Assert.Equal(contactUsDinamico.Id, contactUsManual.Id);
+            Assert.Equal(contactUsDinamico.Name, contactUsManual.Name);
+            Assert.Equal(contactUsDinamico.Email, contactUsManual.Email);
+            Assert.Equal(contactUsDinamico.CellPhone, contactUsManual.CellPhone);
+            Assert.Equal(contactUsDinamico.Message, contactUsManual.Message);
+            Assert.Equal(contactUsDinamico.DateInsert, contactUsManual.DateInsert);
+            Assert.Equal(contactUsDinamico.DateUpdate, contactUsManual.DateUpdate);
+            Assert.Equal(contactUsDinamico.Status, contactUsManual.Status);
+        }
+
+        [Fact]
+        public void Propriedades_DevemAceitarEManterValorNulo()
+        {
+            // Arrange
+            var fixture = new Fixture();
+            var contactUs = fixture.Build<ContactUs>()
+                                   .With(c => c.Name, (string?)null)
+                                   .With(c => c.Email, (string?)null)
+                                   .With(c => c.CellPhone, (string?)null)
+                                   .With(c => c.Message, (string?)null)
+                                   .Create();
+
+            // Act & Assert
+            Assert.Null(contactUs.Name);
+            Assert.Null(contactUs.Email);
+            Assert.Null(contactUs.CellPhone);
+            Assert.Null(contactUs.Message);
         }
 
         [Fact]
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var contactUs = new ContactUs();
+            var fixture = new Fixture();
+            var contactUs = fixture.Create<ContactUs>();
 
             // Act & Assert
             Assert.IsType<int>(contactUs.Id);

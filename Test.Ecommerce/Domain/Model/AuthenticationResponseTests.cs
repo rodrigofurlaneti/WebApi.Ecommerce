@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.AuthenticationResponseTests
 {
     public class AuthenticationResponseTests
     {
@@ -9,12 +10,12 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemAceitarValoresNulos()
         {
             // Arrange
-            var authResponse = new AuthenticationResponse
-            {
-                Username = null,
-                Password = null,
-                Name = null
-            };
+            var fixture = new Fixture();
+            var authResponse = fixture.Build<AuthenticationResponse>()
+                                      .With(ar => ar.Username, (string?)null)
+                                      .With(ar => ar.Password, (string?)null)
+                                      .With(ar => ar.Name, (string?)null)
+                                      .Create();
 
             // Act & Assert
             Assert.Null(authResponse.Username);
@@ -39,28 +40,34 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var authResponse = new AuthenticationResponse
+            var fixture = new Fixture();
+            var authResponseDinamico = fixture.Build<AuthenticationResponse>()
+                                              .With(ar => ar.Status, true) // Define o Status manualmente
+                                              .Create();
+
+            var authResponseManual = new AuthenticationResponse
             {
-                Id = 123,
-                Username = "user123",
-                Password = "pass123",
-                Name = "John Doe",
-                Status = true
+                Id = authResponseDinamico.Id,
+                Username = authResponseDinamico.Username,
+                Password = authResponseDinamico.Password,
+                Name = authResponseDinamico.Name,
+                Status = authResponseDinamico.Status
             };
 
             // Act & Assert
-            Assert.Equal(123, authResponse.Id);
-            Assert.Equal("user123", authResponse.Username);
-            Assert.Equal("pass123", authResponse.Password);
-            Assert.Equal("John Doe", authResponse.Name);
-            Assert.True(authResponse.Status);
+            Assert.Equal(authResponseDinamico.Id, authResponseManual.Id);
+            Assert.Equal(authResponseDinamico.Username, authResponseManual.Username);
+            Assert.Equal(authResponseDinamico.Password, authResponseManual.Password);
+            Assert.Equal(authResponseDinamico.Name, authResponseManual.Name);
+            Assert.Equal(authResponseDinamico.Status, authResponseManual.Status);
         }
 
         [Fact]
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var authResponse = new AuthenticationResponse();
+            var fixture = new Fixture();
+            var authResponse = fixture.Create<AuthenticationResponse>();
 
             // Act & Assert
             Assert.IsType<int>(authResponse.Id);

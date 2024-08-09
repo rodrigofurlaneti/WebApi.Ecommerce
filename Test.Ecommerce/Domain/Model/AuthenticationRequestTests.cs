@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.AuthenticationRequestTests
 {
     public class AuthenticationRequestTests
     {
@@ -9,11 +10,11 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemAceitarValoresNulos()
         {
             // Arrange
-            var authRequest = new AuthenticationRequest
-            {
-                Username = null,
-                Password = null
-            };
+            var fixture = new Fixture();
+            var authRequest = fixture.Build<AuthenticationRequest>()
+                                     .With(ar => ar.Username, (string?)null)
+                                     .With(ar => ar.Password, (string?)null)
+                                     .Create();
 
             // Act & Assert
             Assert.Null(authRequest.Username);
@@ -35,22 +36,27 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var authRequest = new AuthenticationRequest
+            var fixture = new Fixture();
+            var authRequestDinamico = fixture.Build<AuthenticationRequest>()
+                                             .Create();
+
+            var authRequestManual = new AuthenticationRequest
             {
-                Username = "user123",
-                Password = "pass123"
+                Username = authRequestDinamico.Username,
+                Password = authRequestDinamico.Password
             };
 
             // Act & Assert
-            Assert.Equal("user123", authRequest.Username);
-            Assert.Equal("pass123", authRequest.Password);
+            Assert.Equal(authRequestDinamico.Username, authRequestManual.Username);
+            Assert.Equal(authRequestDinamico.Password, authRequestManual.Password);
         }
 
         [Fact]
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var authRequest = new AuthenticationRequest();
+            var fixture = new Fixture();
+            var authRequest = fixture.Create<AuthenticationRequest>();
 
             // Act & Assert
             Assert.IsType<string>(authRequest.Username);

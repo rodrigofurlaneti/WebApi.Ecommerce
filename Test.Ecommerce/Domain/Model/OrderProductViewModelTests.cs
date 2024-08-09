@@ -1,7 +1,9 @@
-﻿using Domain.Ecommerce.Model;
+﻿using System.Collections.Generic;
+using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.OrderProductViewModelTests
 {
     public class OrderProductViewModelTests
     {
@@ -20,22 +22,20 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedade_Products_DevePermitirAlteracaoDeValorPadrao()
         {
             // Arrange
-            var orderProductViewModel = new OrderProductViewModel();
-            var productsList = new List<OrderProductResponseDTO>
+            var fixture = new Fixture(); // Cria uma instância do AutoFixture
+            var productsList = fixture.CreateMany<OrderProductResponseDto>(2).ToList();
+
+            var orderProductViewModel = new OrderProductViewModel
             {
-                new OrderProductResponseDTO { Id = 1, Name = "Product 1" },
-                new OrderProductResponseDTO { Id = 2, Name = "Product 2" }
+                Products = productsList
             };
 
-            // Act
-            orderProductViewModel.Products = productsList;
-
-            // Assert
+            // Act & Assert
             Assert.Equal(2, orderProductViewModel.Products.Count);
-            Assert.Equal(1, orderProductViewModel.Products[0].Id);
-            Assert.Equal("Product 1", orderProductViewModel.Products[0].Name);
-            Assert.Equal(2, orderProductViewModel.Products[1].Id);
-            Assert.Equal("Product 2", orderProductViewModel.Products[1].Name);
+            Assert.Equal(productsList[0].Id, orderProductViewModel.Products[0].Id);
+            Assert.Equal(productsList[0].Name, orderProductViewModel.Products[0].Name);
+            Assert.Equal(productsList[1].Id, orderProductViewModel.Products[1].Id);
+            Assert.Equal(productsList[1].Name, orderProductViewModel.Products[1].Name);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace Test.Ecommerce.Domain.Model
             var orderProductViewModel = new OrderProductViewModel();
 
             // Act & Assert
-            Assert.IsType<List<OrderProductResponseDTO>>(orderProductViewModel.Products);
+            Assert.IsType<List<OrderProductResponseDto>>(orderProductViewModel.Products);
         }
     }
 }

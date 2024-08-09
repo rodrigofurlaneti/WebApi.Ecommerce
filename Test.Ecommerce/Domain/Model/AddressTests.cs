@@ -1,7 +1,8 @@
-﻿using Domain.Ecommerce.Model;
+﻿using AutoFixture;
+using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.AddressTests
 {
     public class AddressTests
     {
@@ -9,22 +10,22 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemAceitarValoresNulos()
         {
             // Arrange
-            var address = new Address
-            {
-                HouseNumber = null,
-                Road = null,
-                Suburb = null,
-                City = null,
-                Municipality = null,
-                County = null,
-                StateDistrict = null,
-                State = null,
-                ISO3166_2_lvl4 = null,
-                Region = null,
-                Postcode = null,
-                Country = null,
-                CountryCode = null
-            };
+            var fixture = new Fixture();
+            var address = fixture.Build<Address>()
+                                 .With(a => a.HouseNumber, (string?)null)
+                                 .With(a => a.Road, (string?)null)
+                                 .With(a => a.Suburb, (string?)null)
+                                 .With(a => a.City, (string?)null)
+                                 .With(a => a.Municipality, (string?)null)
+                                 .With(a => a.County, (string?)null)
+                                 .With(a => a.StateDistrict, (string?)null)
+                                 .With(a => a.State, (string?)null)
+                                 .With(a => a.ISO3166_2_lvl4, (string?)null)
+                                 .With(a => a.Region, (string?)null)
+                                 .With(a => a.Postcode, (string?)null)
+                                 .With(a => a.Country, (string?)null)
+                                 .With(a => a.CountryCode, (string?)null)
+                                 .Create();
 
             // Act & Assert
             Assert.Null(address.HouseNumber);
@@ -68,44 +69,48 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var address = new Address
+            var fixture = new Fixture();
+            var addressDinamico = fixture.Build<Address>().Create();
+
+            var addressManual = new Address
             {
-                HouseNumber = "123",
-                Road = "Main St",
-                Suburb = "Central",
-                City = "Springfield",
-                Municipality = "Springfield Municipality",
-                County = "Clark",
-                StateDistrict = "District 9",
-                State = "IL",
-                ISO3166_2_lvl4 = "US-IL",
-                Region = "Midwest",
-                Postcode = "62701",
-                Country = "United States",
-                CountryCode = "US"
+                HouseNumber = addressDinamico.HouseNumber,
+                Road = addressDinamico.Road,
+                Suburb = addressDinamico.Suburb,
+                City = addressDinamico.City,
+                Municipality = addressDinamico.Municipality,
+                County = addressDinamico.County,
+                StateDistrict = addressDinamico.StateDistrict,
+                State = addressDinamico.State,
+                ISO3166_2_lvl4 = addressDinamico.ISO3166_2_lvl4,
+                Region = addressDinamico.Region,
+                Postcode = addressDinamico.Postcode,
+                Country = addressDinamico.Country,
+                CountryCode = addressDinamico.CountryCode
             };
 
             // Act & Assert
-            Assert.Equal("123", address.HouseNumber);
-            Assert.Equal("Main St", address.Road);
-            Assert.Equal("Central", address.Suburb);
-            Assert.Equal("Springfield", address.City);
-            Assert.Equal("Springfield Municipality", address.Municipality);
-            Assert.Equal("Clark", address.County);
-            Assert.Equal("District 9", address.StateDistrict);
-            Assert.Equal("IL", address.State);
-            Assert.Equal("US-IL", address.ISO3166_2_lvl4);
-            Assert.Equal("Midwest", address.Region);
-            Assert.Equal("62701", address.Postcode);
-            Assert.Equal("United States", address.Country);
-            Assert.Equal("US", address.CountryCode);
+            Assert.Equal(addressDinamico.HouseNumber, addressManual.HouseNumber);
+            Assert.Equal(addressDinamico.Road, addressManual.Road);
+            Assert.Equal(addressDinamico.Suburb, addressManual.Suburb);
+            Assert.Equal(addressDinamico.City, addressManual.City);
+            Assert.Equal(addressDinamico.Municipality, addressManual.Municipality);
+            Assert.Equal(addressDinamico.County, addressManual.County);
+            Assert.Equal(addressDinamico.StateDistrict, addressManual.StateDistrict);
+            Assert.Equal(addressDinamico.State, addressManual.State);
+            Assert.Equal(addressDinamico.ISO3166_2_lvl4, addressManual.ISO3166_2_lvl4);
+            Assert.Equal(addressDinamico.Region, addressManual.Region);
+            Assert.Equal(addressDinamico.Postcode, addressManual.Postcode);
+            Assert.Equal(addressDinamico.Country, addressManual.Country);
+            Assert.Equal(addressDinamico.CountryCode, addressManual.CountryCode);
         }
 
         [Fact]
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var address = new Address();
+            var fixture = new Fixture();
+            var address = fixture.Create<Address>();
 
             // Act & Assert
             Assert.IsType<string>(address.HouseNumber);

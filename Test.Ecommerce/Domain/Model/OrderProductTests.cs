@@ -1,8 +1,10 @@
-﻿using Domain.Ecommerce.Enum;
+﻿using System;
+using AutoFixture;
+using Domain.Ecommerce.Enum;
 using Domain.Ecommerce.Model;
 using Xunit;
 
-namespace Test.Ecommerce.Domain.Model
+namespace Test.Ecommerce.Domain.Model.OrderProductTests
 {
     public class OrderProductTests
     {
@@ -25,22 +27,22 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemPermitirAlteracaoDeValoresPadrao()
         {
             // Arrange
-            var orderProduct = new OrderProduct
-            {
-                Id = 123,
-                IdOrder = 456,
-                IdProduct = 789,
-                DateInsert = new DateTime(2023, 1, 1),
-                DateUpdate = new DateTime(2023, 1, 2),
-                Status = Status.Active // Supondo que 'Active' é um valor válido no enum 'Status'
-            };
+            var fixture = new Fixture(); // Cria uma instância do AutoFixture
+            var orderProduct = fixture.Build<OrderProduct>()
+                                      .With(op => op.Id, 123)
+                                      .With(op => op.IdOrder, 456)
+                                      .With(op => op.IdProduct, 789)
+                                      .With(op => op.DateInsert, new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc))
+                                      .With(op => op.DateUpdate, new DateTime(2023, 1, 2, 0, 0, 0, DateTimeKind.Utc))
+                                      .With(op => op.Status, Status.Active) // Supondo que 'Active' é um valor válido no enum 'Status'
+                                      .Create();
 
             // Act & Assert
             Assert.Equal(123, orderProduct.Id);
             Assert.Equal(456, orderProduct.IdOrder);
             Assert.Equal(789, orderProduct.IdProduct);
-            Assert.Equal(new DateTime(2023, 1, 1), orderProduct.DateInsert);
-            Assert.Equal(new DateTime(2023, 1, 2), orderProduct.DateUpdate);
+            Assert.Equal(new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc), orderProduct.DateInsert);
+            Assert.Equal(new DateTime(2023, 1, 2, 0, 0, 0, DateTimeKind.Utc), orderProduct.DateUpdate);
             Assert.Equal(Status.Active, orderProduct.Status);
         }
 
@@ -48,7 +50,8 @@ namespace Test.Ecommerce.Domain.Model
         public void Propriedades_DevemTerTiposCorretos()
         {
             // Arrange
-            var orderProduct = new OrderProduct();
+            var fixture = new Fixture();
+            var orderProduct = fixture.Create<OrderProduct>();
 
             // Act & Assert
             Assert.IsType<int>(orderProduct.Id);
