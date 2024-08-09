@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Data.Ecommerce\Data.Ecommerce.csproj" />
     <ProjectReference Include="..\Domain.Ecommerce\Domain.Ecommerce.csproj" />
   </ItemGroup>
 

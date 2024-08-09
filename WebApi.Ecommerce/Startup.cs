@@ -1,5 +1,5 @@
-﻿using WebApi.Ecommerce.Data.Interface;
-using WebApi.Ecommerce.Data.Repository;
+﻿using Data.Ecommerce.Interface;
+using Data.Ecommerce.Repository;
 using Microsoft.OpenApi.Models;
 using Domain.Ecommerce.Model;
 

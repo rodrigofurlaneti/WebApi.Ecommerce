@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Text.Json;
-using WebApi.Ecommerce.Data.Interface;
+using Data.Ecommerce.Interface;
 
 namespace WebApi.Ecommerce.Controllers
 {

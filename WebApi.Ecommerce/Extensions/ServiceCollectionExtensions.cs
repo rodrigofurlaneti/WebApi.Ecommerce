@@ -1,7 +1,7 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.Extensions.DependencyInjection;
-using WebApi.Ecommerce.Data.Interface;
-using WebApi.Ecommerce.Data.Repository;
+using Data.Ecommerce.Interface;
+using Data.Ecommerce.Repository;
 
 namespace WebApi.Ecommerce.Extensions
 {
