@@ -1,24 +1,27 @@
-﻿using Domain.Ecommerce.Model;
+﻿using System.Data;
+using Data.Ecommerce.Interface;
 using Microsoft.Data.SqlClient;
-using System.Data;
-using WebApi.Ecommerce.Data.Interface;
+using Microsoft.Extensions.Configuration;
+using Domain.Ecommerce.Enum;
+using Domain.Ecommerce.Model;
 
-namespace WebApi.Ecommerce.Data.Repository
+namespace Data.Ecommerce.Repository
 {
-    public class AccessLogRepository : IAccessLogRepository
+    public class ContactUsRepository : IContactUsRepository
     {
         private readonly string _connectionString;
 
-        public AccessLogRepository(IConfiguration configuration)
+        public ContactUsRepository(IConfiguration configuration)
         {
+            // Garante que _connectionString seja inicializado corretamente
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
-        public async Task<IEnumerable<AccessLog>> GetAsync()
+        public async Task<IEnumerable<ContactUs>> GetAsync()
         {
-            List<AccessLog> list = new List<AccessLog>();
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_GetAll";
+            List<ContactUs> list = new List<ContactUs>();
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetAll";
 
             try
             {
@@ -33,7 +36,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             while (await reader.ReadAsync())
                             {
-                                list.Add(CreateFromReader(reader));
+                                list.Add(CreateContactUsFromReader(reader));
                             }
                         }
                     }
@@ -53,9 +56,9 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(AccessLog accessLog)
+        public async Task PostAsync(ContactUs contactUs)
         {
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Insert";
 
             try
             {
@@ -65,14 +68,14 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        command.Parameters.AddWithValue("@Latitude", accessLog.Latitude);
-                        command.Parameters.AddWithValue("@Longitude", accessLog.Longitude);
-                        command.Parameters.AddWithValue("@UserAgent", accessLog.UserAgent);
-                        command.Parameters.AddWithValue("@InternetProtocol", accessLog.InternetProtocol);
+                        // Adicionar parâmetros ao comando
+                        command.Parameters.AddWithValue("@Name", contactUs.Name);
+                        command.Parameters.AddWithValue("@Email", contactUs.Email);
+                        command.Parameters.AddWithValue("@CellPhone", contactUs.CellPhone);
+                        command.Parameters.AddWithValue("@Message", contactUs.Message);
 
                         await connection.OpenAsync();
-
-                        await command.ExecuteScalarAsync();
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
             }
@@ -88,10 +91,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<AccessLog?> GetByIdAsync(int id)
+        public async Task<ContactUs?> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_X_Product_GetById";
-            AccessLog? order = null;
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_GetById";
+
+            ContactUs? contactUs = null;
 
             try
             {
@@ -108,7 +112,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             if (await reader.ReadAsync())
                             {
-                                order = CreateFromReader(reader);
+                                contactUs = CreateContactUsFromReader(reader);
                             }
                         }
                     }
@@ -125,52 +129,12 @@ namespace WebApi.Ecommerce.Data.Repository
                 throw;
             }
 
-            return order;
+            return contactUs;
         }
 
-        public async Task<int> GetProductCountByAccessLogIdAsync(int orderId)
+        public async Task PutAsync(ContactUs contactUs)
         {
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_X_Product_CountById";
-
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(_connectionString))
-                {
-                    using (SqlCommand command = new SqlCommand(storedProcedureName, connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@IdAccessLog", orderId);
-
-                        await connection.OpenAsync();
-
-                        var result = await command.ExecuteScalarAsync();
-
-                        if (result != null && int.TryParse(result.ToString(), out int productCount))
-                        {
-                            return productCount;
-                        }
-                        else
-                        {
-                            throw new Exception("Failed to retrieve the product count.");
-                        }
-                    }
-                }
-            }
-            catch (SqlException sqlEx)
-            {
-                Console.Error.WriteLine($"Erro de SQL: {sqlEx.Message}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Erro: {ex.Message}");
-                throw;
-            }
-        }
-
-        public async Task PutAsync(AccessLog order)
-        {
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Update";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Update";
 
             try
             {
@@ -180,7 +144,8 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        AddParameters(command, order);
+                        // Adicionar apenas os parâmetros necessários
+                        AddContactUsParameters(command, contactUs);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -201,7 +166,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public async Task DeleteAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Delete";
+            string storedProcedureName = "Ecommerce_Procedure_ContactUs_Delete";
 
             try
             {
@@ -229,28 +194,45 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        private AccessLog CreateFromReader(SqlDataReader reader)
+        private ContactUs CreateContactUsFromReader(SqlDataReader reader)
         {
-            return new AccessLog
+            for (int i = 0; i < reader.FieldCount; i++)
+                Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
+
+            return new ContactUs
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                Latitude = reader.GetString(reader.GetOrdinal("Latitude")),
-                Longitude = reader.GetString(reader.GetOrdinal("Longitude")),
-                InternetProtocol = reader.GetString(reader.GetOrdinal("InternetProtocol")),
-                UserAgent = reader.GetString(reader.GetOrdinal("UserAgent")),
-                DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert"))
+                Name = reader.GetString(reader.GetOrdinal("Name")),
+                Email = reader.GetString(reader.GetOrdinal("Email")),
+                CellPhone = reader.GetString(reader.GetOrdinal("CellPhone")),
+                Message = reader.GetString(reader.GetOrdinal("Message")),
+                DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
+                DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
+                Status = reader.GetBoolean(reader.GetOrdinal("Status")) ? Status.Active : Status.Disabled
+
             };
         }
 
-        private void AddParameters(SqlCommand command, AccessLog accessLog)
+        private void AddContactUsParameters(SqlCommand command, ContactUs contactUs)
         {
-            command.Parameters.AddWithValue("@Id", accessLog.Id);
-            command.Parameters.AddWithValue("@Latitude", accessLog.Latitude);
-            command.Parameters.AddWithValue("@Longitude", accessLog.Longitude);
-            command.Parameters.AddWithValue("@InternetProtocol", accessLog.InternetProtocol);
-            command.Parameters.AddWithValue("@UserAgent", accessLog.UserAgent);
-            command.Parameters.AddWithValue("@DateInsert", accessLog.DateInsert);
-        }
+            var parameters = new (string, object?)[]
+            {
+                    ("@Id", contactUs.Id),
+                    ("@Name", contactUs.Name),
+                    ("@Email", contactUs.Email),
+                    ("@CellPhone", contactUs.CellPhone),
+                    ("@Message", contactUs.Message),
+                    ("@DateInsert", contactUs.DateInsert),
+                    ("@DateUpdate", contactUs.DateUpdate),
+                    ("@Status", (int)contactUs.Status)
+            };
 
+            foreach (var (name, value) in parameters)
+            {
+                Console.WriteLine($"{name}: {value}");
+                command.Parameters.AddWithValue(name, value);
+            }
+
+        }
     }
 }

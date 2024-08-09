@@ -1,27 +1,25 @@
-﻿using Domain.Ecommerce.Enum;
-using Domain.Ecommerce.Model;
+﻿using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using WebApi.Ecommerce.Data.Interface;
+using Data.Ecommerce.Interface;
+using Microsoft.Extensions.Configuration;
 
-namespace WebApi.Ecommerce.Data.Repository
+namespace Data.Ecommerce.Repository
 {
-    public class ProductRepository : IProductRepository
+    public class AccessLogRepository : IAccessLogRepository
     {
         private readonly string _connectionString;
 
-        public ProductRepository(IConfiguration configuration)
+        public AccessLogRepository(IConfiguration configuration)
         {
-            // Garante que _connectionString seja inicializado corretamente
             _connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
-        public async Task<IEnumerable<Product>> GetAsync()
+        public async Task<IEnumerable<AccessLog>> GetAsync()
         {
-            List<Product> list = new List<Product>();
-
-            string storedProcedureName = "Ecommerce_Procedure_Product_GetAll";
+            List<AccessLog> list = new List<AccessLog>();
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_GetAll";
 
             try
             {
@@ -56,9 +54,9 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(Product product)
+        public async Task PostAsync(AccessLog accessLog)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Product_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Insert";
 
             try
             {
@@ -68,18 +66,14 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        // Adicionar parâmetros ao comando
-                        command.Parameters.AddWithValue("@Name", product.Name);
-                        command.Parameters.AddWithValue("@Amount", product.Amount);
-                        command.Parameters.AddWithValue("@Details", product.Details);
-                        command.Parameters.AddWithValue("@Picture", product.Picture);
-                        command.Parameters.AddWithValue("@ValueOf", product.ValueOf);
-                        command.Parameters.AddWithValue("@ValueFor", product.ValueFor);
-                        command.Parameters.AddWithValue("@Discount", product.Discount);
-                        command.Parameters.AddWithValue("@ProductStatus", (int)product.ProductStatus);
+                        command.Parameters.AddWithValue("@Latitude", accessLog.Latitude);
+                        command.Parameters.AddWithValue("@Longitude", accessLog.Longitude);
+                        command.Parameters.AddWithValue("@UserAgent", accessLog.UserAgent);
+                        command.Parameters.AddWithValue("@InternetProtocol", accessLog.InternetProtocol);
 
                         await connection.OpenAsync();
-                        await command.ExecuteNonQueryAsync();
+
+                        await command.ExecuteScalarAsync();
                     }
                 }
             }
@@ -95,11 +89,10 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<Product?> GetByIdAsync(int id)
+        public async Task<AccessLog?> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Product_GetById";
-
-            Product? product = null;
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_X_Product_GetById";
+            AccessLog? order = null;
 
             try
             {
@@ -116,7 +109,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             if (await reader.ReadAsync())
                             {
-                                product = CreateFromReader(reader);
+                                order = CreateFromReader(reader);
                             }
                         }
                     }
@@ -133,12 +126,52 @@ namespace WebApi.Ecommerce.Data.Repository
                 throw;
             }
 
-            return product;
+            return order;
         }
 
-        public async Task PutAsync(Product product)
+        public async Task<int> GetProductCountByAccessLogIdAsync(int orderId)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Product_Update";
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_X_Product_CountById";
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    using (SqlCommand command = new SqlCommand(storedProcedureName, connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@IdAccessLog", orderId);
+
+                        await connection.OpenAsync();
+
+                        var result = await command.ExecuteScalarAsync();
+
+                        if (result != null && int.TryParse(result.ToString(), out int productCount))
+                        {
+                            return productCount;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to retrieve the product count.");
+                        }
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.Error.WriteLine($"Erro de SQL: {sqlEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task PutAsync(AccessLog order)
+        {
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Update";
 
             try
             {
@@ -148,8 +181,7 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        // Adicionar apenas os parâmetros necessários
-                        AddParameters(command, product);
+                        AddParameters(command, order);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -170,7 +202,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public async Task DeleteAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Product_Delete";
+            string storedProcedureName = "Ecommerce_Procedure_AccessLog_Delete";
 
             try
             {
@@ -198,51 +230,28 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        private Product CreateFromReader(SqlDataReader reader)
+        private AccessLog CreateFromReader(SqlDataReader reader)
         {
-            for (int i = 0; i < reader.FieldCount; i++)
-                Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
-
-            return new Product
+            return new AccessLog
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                Name = reader.GetString(reader.GetOrdinal("Name")),
-                Amount = reader.GetInt32(reader.GetOrdinal("Amount")),
-                Details = reader.GetString(reader.GetOrdinal("Details")),
-                Picture = reader.GetString(reader.GetOrdinal("Picture")),
-                ValueOf = reader.GetDecimal(reader.GetOrdinal("ValueOf")),
-                ValueFor = reader.GetDecimal(reader.GetOrdinal("ValueFor")),
-                Discount = reader.GetDecimal(reader.GetOrdinal("Discount")),
-                DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
-                DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
-                ProductStatus = (ProductStatus)reader.GetInt32(reader.GetOrdinal("ProductStatus"))
+                Latitude = reader.GetString(reader.GetOrdinal("Latitude")),
+                Longitude = reader.GetString(reader.GetOrdinal("Longitude")),
+                InternetProtocol = reader.GetString(reader.GetOrdinal("InternetProtocol")),
+                UserAgent = reader.GetString(reader.GetOrdinal("UserAgent")),
+                DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert"))
             };
         }
 
-        private void AddParameters(SqlCommand command, Product product)
+        private void AddParameters(SqlCommand command, AccessLog accessLog)
         {
-            var parameters = new (string, object?)[]
-            {
-                    ("@Id", product.Id),
-                    ("@Name", product.Name),
-                    ("@Amount", product.Amount),
-                    ("@Details", product.Details),
-                    ("@Picture", product.Picture),
-                    ("@ValueOf", product.ValueOf),
-                    ("@ValueFor", product.ValueFor),
-                    ("@ValueOf", product.ValueOf),
-                    ("@Discount", product.Discount),
-                    ("@DateInsert", product.DateInsert),
-                    ("@DateUpdate", product.DateUpdate),
-                    ("@OrderStatus", (OrderStatus)product.ProductStatus)
-            };
-
-            foreach (var (name, value) in parameters)
-            {
-                Console.WriteLine($"{name}: {value}");
-                command.Parameters.AddWithValue(name, value);
-            }
-
+            command.Parameters.AddWithValue("@Id", accessLog.Id);
+            command.Parameters.AddWithValue("@Latitude", accessLog.Latitude);
+            command.Parameters.AddWithValue("@Longitude", accessLog.Longitude);
+            command.Parameters.AddWithValue("@InternetProtocol", accessLog.InternetProtocol);
+            command.Parameters.AddWithValue("@UserAgent", accessLog.UserAgent);
+            command.Parameters.AddWithValue("@DateInsert", accessLog.DateInsert);
         }
+
     }
 }

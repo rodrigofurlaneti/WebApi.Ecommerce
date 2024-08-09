@@ -1,6 +1,6 @@
 ﻿using Domain.Ecommerce.Model;
 
-namespace WebApi.Ecommerce.Data.Interface
+namespace Data.Ecommerce.Interface
 {
     public interface IAccessLogRepository
     {

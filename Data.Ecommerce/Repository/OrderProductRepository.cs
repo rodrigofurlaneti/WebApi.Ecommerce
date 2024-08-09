@@ -2,11 +2,10 @@
 using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using WebApi.Ecommerce.Data.Interface;
+using Data.Ecommerce.Interface;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 
-namespace WebApi.Ecommerce.Data.Repository
+namespace Data.Ecommerce.Repository
 {
     public class OrderProductRepository : IOrderProductRepository
     {

@@ -1,28 +1,28 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
-using System;
-using WebApi.Ecommerce.Data.Interface;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+﻿using Domain.Ecommerce.Enum;
 using Domain.Ecommerce.Model;
-using Domain.Ecommerce.Enum;
+using Microsoft.Data.SqlClient;
+using System.Data;
+using Data.Ecommerce.Interface;
+using Microsoft.Extensions.Configuration;
 
-namespace WebApi.Ecommerce.Data.Repository
+namespace Data.Ecommerce.Repository
 {
-    public class UsersRepository : IUsersRepository
+    public class ProductRepository : IProductRepository
     {
         private readonly string _connectionString;
 
-        public UsersRepository(IConfiguration configuration)
+        public ProductRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            // Garante que _connectionString seja inicializado corretamente
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Connection string cannot be null");
         }
 
-        public async Task<IEnumerable<User>> GetAsync()
+        public async Task<IEnumerable<Product>> GetAsync()
         {
-            List<User> list = new List<User>();
-            string storedProcedureName = "Ecommerce_Procedure_User_GetAll";
+            List<Product> list = new List<Product>();
+
+            string storedProcedureName = "Ecommerce_Procedure_Product_GetAll";
 
             try
             {
@@ -37,7 +37,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             while (await reader.ReadAsync())
                             {
-                                list.Add(CreateUserFromReader(reader));
+                                list.Add(CreateFromReader(reader));
                             }
                         }
                     }
@@ -57,9 +57,9 @@ namespace WebApi.Ecommerce.Data.Repository
             return list;
         }
 
-        public async Task PostAsync(User user)
+        public async Task PostAsync(Product product)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Insert";
+            string storedProcedureName = "Ecommerce_Procedure_Product_Insert";
 
             try
             {
@@ -70,18 +70,14 @@ namespace WebApi.Ecommerce.Data.Repository
                         command.CommandType = CommandType.StoredProcedure;
 
                         // Adicionar parâmetros ao comando
-                        command.Parameters.AddWithValue("@Name", user.Name);
-                        command.Parameters.AddWithValue("@Email", user.Email);
-                        command.Parameters.AddWithValue("@Address", user.Address);
-                        command.Parameters.AddWithValue("@Number", user.Number);
-                        command.Parameters.AddWithValue("@Complement", user.Complement);
-                        command.Parameters.AddWithValue("@Neighborhood", user.Neighborhood);
-                        command.Parameters.AddWithValue("@City", user.City);
-                        command.Parameters.AddWithValue("@State", user.State);
-                        command.Parameters.AddWithValue("@ZipCode", user.ZipCode);
-                        command.Parameters.AddWithValue("@CellPhone", user.CellPhone);
-                        command.Parameters.AddWithValue("@Username", user.Username);
-                        command.Parameters.AddWithValue("@Password", user.Password);
+                        command.Parameters.AddWithValue("@Name", product.Name);
+                        command.Parameters.AddWithValue("@Amount", product.Amount);
+                        command.Parameters.AddWithValue("@Details", product.Details);
+                        command.Parameters.AddWithValue("@Picture", product.Picture);
+                        command.Parameters.AddWithValue("@ValueOf", product.ValueOf);
+                        command.Parameters.AddWithValue("@ValueFor", product.ValueFor);
+                        command.Parameters.AddWithValue("@Discount", product.Discount);
+                        command.Parameters.AddWithValue("@ProductStatus", (int)product.ProductStatus);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -100,11 +96,11 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        public async Task<User> GetByIdAsync(int id)
+        public async Task<Product?> GetByIdAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_GetById";
+            string storedProcedureName = "Ecommerce_Procedure_Product_GetById";
 
-            User user = null;
+            Product? product = null;
 
             try
             {
@@ -121,7 +117,7 @@ namespace WebApi.Ecommerce.Data.Repository
                         {
                             if (await reader.ReadAsync())
                             {
-                                user = CreateUserFromReader(reader);
+                                product = CreateFromReader(reader);
                             }
                         }
                     }
@@ -138,12 +134,12 @@ namespace WebApi.Ecommerce.Data.Repository
                 throw;
             }
 
-            return user;
+            return product;
         }
 
-        public async Task PutAsync(User user)
+        public async Task PutAsync(Product product)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Update";
+            string storedProcedureName = "Ecommerce_Procedure_Product_Update";
 
             try
             {
@@ -153,7 +149,8 @@ namespace WebApi.Ecommerce.Data.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        AddUserParameters(command, user);
+                        // Adicionar apenas os parâmetros necessários
+                        AddParameters(command, product);
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -174,7 +171,7 @@ namespace WebApi.Ecommerce.Data.Repository
 
         public async Task DeleteAsync(int id)
         {
-            string storedProcedureName = "Ecommerce_Procedure_User_Delete";
+            string storedProcedureName = "Ecommerce_Procedure_Product_Delete";
 
             try
             {
@@ -202,52 +199,51 @@ namespace WebApi.Ecommerce.Data.Repository
             }
         }
 
-        private User CreateUserFromReader(SqlDataReader reader)
+        private Product CreateFromReader(SqlDataReader reader)
         {
             for (int i = 0; i < reader.FieldCount; i++)
-            {
                 Console.WriteLine(reader.GetName(i) + " - " + reader.GetFieldType(i));
-            }
 
-            return new User
+            return new Product
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 Name = reader.GetString(reader.GetOrdinal("Name")),
-                Email = reader.GetString(reader.GetOrdinal("Email")),
-                Address = reader.GetString(reader.GetOrdinal("Address")),
-                Number = reader.GetString(reader.GetOrdinal("Number")),
-                Complement = reader.GetString(reader.GetOrdinal("Complement")),
-                Neighborhood = reader.GetString(reader.GetOrdinal("Neighborhood")),
-                City = reader.GetString(reader.GetOrdinal("City")),
-                State = reader.GetString(reader.GetOrdinal("State")),
-                ZipCode = reader.GetString(reader.GetOrdinal("ZipCode")),
-                CellPhone = reader.GetString(reader.GetOrdinal("CellPhone")),
-                Username = reader.GetString(reader.GetOrdinal("Username")),
-                Password = reader.GetString(reader.GetOrdinal("Password")),
+                Amount = reader.GetInt32(reader.GetOrdinal("Amount")),
+                Details = reader.GetString(reader.GetOrdinal("Details")),
+                Picture = reader.GetString(reader.GetOrdinal("Picture")),
+                ValueOf = reader.GetDecimal(reader.GetOrdinal("ValueOf")),
+                ValueFor = reader.GetDecimal(reader.GetOrdinal("ValueFor")),
+                Discount = reader.GetDecimal(reader.GetOrdinal("Discount")),
                 DateInsert = reader.GetDateTime(reader.GetOrdinal("DateInsert")),
                 DateUpdate = reader.GetDateTime(reader.GetOrdinal("DateUpdate")),
-                Status = reader.GetBoolean(reader.GetOrdinal("Status")) ? Status.Active : Status.Disabled
+                ProductStatus = (ProductStatus)reader.GetInt32(reader.GetOrdinal("ProductStatus"))
             };
         }
 
-        private void AddUserParameters(SqlCommand command, User user)
+        private void AddParameters(SqlCommand command, Product product)
         {
-            command.Parameters.AddWithValue("@Id", user.Id);
-            command.Parameters.AddWithValue("@Name", user.Name);
-            command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@Address", user.Address);
-            command.Parameters.AddWithValue("@Number", user.Number);
-            command.Parameters.AddWithValue("@Complement", user.Complement);
-            command.Parameters.AddWithValue("@Neighborhood", user.Neighborhood);
-            command.Parameters.AddWithValue("@City", user.City);
-            command.Parameters.AddWithValue("@State", user.State);
-            command.Parameters.AddWithValue("@ZipCode", user.ZipCode);
-            command.Parameters.AddWithValue("@CellPhone", user.CellPhone);
-            command.Parameters.AddWithValue("@Username", user.Username);
-            command.Parameters.AddWithValue("@Password", user.Password);
-            command.Parameters.AddWithValue("@DateInsert", user.DateInsert);
-            command.Parameters.AddWithValue("@DateUpdate", user.DateUpdate);
-            command.Parameters.AddWithValue("@Status", (int)user.Status);
+            var parameters = new (string, object?)[]
+            {
+                    ("@Id", product.Id),
+                    ("@Name", product.Name),
+                    ("@Amount", product.Amount),
+                    ("@Details", product.Details),
+                    ("@Picture", product.Picture),
+                    ("@ValueOf", product.ValueOf),
+                    ("@ValueFor", product.ValueFor),
+                    ("@ValueOf", product.ValueOf),
+                    ("@Discount", product.Discount),
+                    ("@DateInsert", product.DateInsert),
+                    ("@DateUpdate", product.DateUpdate),
+                    ("@OrderStatus", (OrderStatus)product.ProductStatus)
+            };
+
+            foreach (var (name, value) in parameters)
+            {
+                Console.WriteLine($"{name}: {value}");
+                command.Parameters.AddWithValue(name, value);
+            }
+
         }
     }
 }
