@@ -66,6 +66,7 @@ namespace Data.Ecommerce.Repository
                 Name = reader.GetString(reader.GetOrdinal("Name")),
                 Username = reader.GetString(reader.GetOrdinal("Username")),
                 Password = reader.GetString(reader.GetOrdinal("Password")),
+                Profile = reader.GetString(reader.GetOrdinal("Profile")),
                 Status = reader.GetBoolean(reader.GetOrdinal("Status")),
             };
         }

@@ -17,7 +17,7 @@ namespace WebApi.Ecommerce.Controllers
 
         // GET: api/ContactUs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ContactUs>>> GetContactUs()
+        public async Task<ActionResult<IEnumerable<ContactUs>>> Get()
         {
             var contactUs = await _contactUsRepository.GetAsync();
             return Ok(contactUs);
@@ -25,52 +25,111 @@ namespace WebApi.Ecommerce.Controllers
 
         // GET: api/ContactUs/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ContactUs>> GetContactUs(int id)
+        public async Task<ActionResult<ContactUs>> Get(int id)
         {
-            var contactUs = await _contactUsRepository.GetByIdAsync(id);
-
-            if (contactUs == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do contate-nos ID é zero");
             }
 
-            return Ok(contactUs);
+            try
+            {
+                var contactUs = await _contactUsRepository.GetByIdAsync(id);
+
+                if (contactUs == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(contactUs);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação do contate-nos: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // POST: api/ContactUs
         [HttpPost]
         public async Task<ActionResult<ContactUs>> PostUser(ContactUs contactUs)
         {
-            await _contactUsRepository.PostAsync(contactUs);
-            return CreatedAtAction(nameof(GetContactUs), new { id = contactUs.Id }, contactUs);
+            if (contactUs == null)
+            {
+                return BadRequest("A solicitação do contate-nos é nula");
+            }
+
+            try
+            {
+                await _contactUsRepository.PostAsync(contactUs);
+
+                return CreatedAtAction(nameof(Get), new { id = contactUs.Id }, contactUs);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a autenticação: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // PUT: api/ContactUs/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, ContactUs contactUs)
+        [HttpPut]
+        public async Task<IActionResult> Put(ContactUs contactUs)
         {
-            if (id != contactUs.Id)
+            if (contactUs == null)
             {
-                return BadRequest();
+                return BadRequest("A solicitação do contate-nos é nula");
             }
 
-            await _contactUsRepository.PutAsync(contactUs);
-            return NoContent();
+            if (contactUs.Id == 0)
+            {
+                return BadRequest("A solicitação do id do contate-nos é zero");
+            }
+
+            try
+            {
+                await _contactUsRepository.PutAsync(contactUs);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para atualizar o contate-nos: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // DELETE: api/ContactUs/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var user = await _contactUsRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do id do contate-nos é zero");
             }
 
-            await _contactUsRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
-            return NoContent();
+            try
+            {
+                var user = await _contactUsRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                await _contactUsRepository.DeleteAsync(id); 
+                
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Domain.Ecommerce.Model;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 using System.Text.Json;
 using Data.Ecommerce.Interface;
 
@@ -27,21 +26,36 @@ namespace WebApi.Ecommerce.Controllers
         public async Task<ActionResult<IEnumerable<AccessLog>>> Get()
         {
             var product = await _accessLogRepository.GetAsync();
+
             return Ok(product);
         }
 
         // GET: api/AccessLogs/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<AccessLog>> GetAccessLog(int id)
+        public async Task<ActionResult<AccessLog>> Get(int id)
         {
-            var user = await _accessLogRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do AccessLog ID é ZERO");
             }
 
-            return Ok(user);
+            try
+            {
+                var user = await _accessLogRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação do AccessLog: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         [HttpPost]
@@ -51,6 +65,7 @@ namespace WebApi.Ecommerce.Controllers
             {
                 return BadRequest("AccessLog is null");
             }
+
 
             // Log para verificar os dados recebidos
             Console.WriteLine($"Latitude: {accessLog.Latitude}, Longitude: {accessLog.Longitude}, IP: {accessLog.InternetProtocol}");
@@ -91,35 +106,65 @@ namespace WebApi.Ecommerce.Controllers
                 return StatusCode(500, "Error processing geolocation data");
             }
 
-            return CreatedAtAction(nameof(GetAccessLog), new { id = accessLog.Id }, accessLog);
+            return CreatedAtAction(nameof(Get), new { id = accessLog.Id }, accessLog);
         }
 
         // PUT: api/AccessLogs/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, AccessLog user)
+        [HttpPut]
+        public async Task<IActionResult> Put(AccessLog accessLog)
         {
-            if (id != user.Id)
+            if (accessLog == null)
             {
-                return BadRequest();
+                return BadRequest("A solicitação do accessLog é nula");
             }
 
-            await _accessLogRepository.PutAsync(user);
-            return NoContent();
+            if (accessLog.Id == 0)
+            {
+                return BadRequest("A solicitação do id do accessLog é zero");
+            }
+
+            try
+            {
+                await _accessLogRepository.PutAsync(accessLog);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para atualizar o accessLog: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // DELETE: api/AccessLogs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _accessLogRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do id do perfil é zero");
             }
 
-            await _accessLogRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
-            return NoContent();
+            try
+            {
+                var user = await _accessLogRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                await _accessLogRepository.DeleteAsync(id); 
+                
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para apagar o AccessLog: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
     }
 }

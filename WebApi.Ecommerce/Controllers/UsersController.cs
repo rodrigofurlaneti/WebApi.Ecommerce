@@ -17,60 +17,121 @@ namespace WebApi.Ecommerce.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> Get()
         {
             var users = await _usersRepository.GetAsync();
+
             return Ok(users);
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<User>> Get(int id)
         {
-            var user = await _usersRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do usuário ID é ZERO");
             }
 
-            return Ok(user);
+            try
+            {
+                var user = await _usersRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(user);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
         }
 
         // POST: api/Users
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> Post(User user)
         {
-            await _usersRepository.PostAsync(user);
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-
-        // PUT: api/Users/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
-        {
-            if (id != user.Id)
+            if (user == null)
             {
-                return BadRequest();
+                return BadRequest("A solicitação do usuário é nula");
             }
 
-            await _usersRepository.PutAsync(user);
-            return NoContent();
+            try
+            {
+                await _usersRepository.PostAsync(user);
+
+                return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para adicionar um novo usuário: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
+        }
+
+        // PUT: api/Users
+        [HttpPut]
+        public async Task<IActionResult> Put(User user)
+        {
+            if (user == null)
+            {
+                return BadRequest("A solicitação do perfil é nula");
+            }
+
+            if (user.Id == 0)
+            {
+                return BadRequest("A solicitação do id do perfil é zero");
+            }
+
+            try
+            {
+                await _usersRepository.PutAsync(user);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para atualizar um registro de usuário: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var user = await _usersRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do id do perfil é zero");
             }
 
-            await _usersRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
-            return NoContent();
+            try
+            {
+                var user = await _usersRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound("A solicitação do id do usário não existe na base dados");
+                }
+
+                await _usersRepository.DeleteAsync(id); 
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para deletar o usuário da base dados ID número: {id} - {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
     }
 }

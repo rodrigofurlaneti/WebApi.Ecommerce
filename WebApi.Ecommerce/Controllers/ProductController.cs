@@ -20,21 +20,36 @@ namespace WebApi.Ecommerce.Controllers
         public async Task<ActionResult<IEnumerable<Product>>> Get()
         {
             var product = await _productRepository.GetAsync();
+
             return Ok(product);
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<Product>> Get(int id)
         {
-            var user = await _productRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do pedido ID é zero");
             }
 
-            return Ok(user);
+            try
+            {
+                var product = await _productRepository.GetByIdAsync(id);
+
+                if (product == null)
+                {
+                    return NotFound("Erro durante a solicitação do produto, não existe este registro na base dados ID: " + id);
+                }
+
+                return Ok(product);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação do produto: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         [HttpPost]
@@ -42,42 +57,81 @@ namespace WebApi.Ecommerce.Controllers
         {
             if (product == null)
             {
-                return BadRequest("Product is null");
+                return BadRequest("A solicitação do produto é nula");
             }
 
-            // Log para verificar os dados recebidos
-            Console.WriteLine($"Nome do Produto: {product.Name}, Quantidade: {product.Amount}, Foto: {product.Picture}");
+            try
+            {
+                Console.WriteLine($"Nome do Produto: {product.Name}, Quantidade: {product.Amount}, Foto: {product.Picture}");
 
-            await _productRepository.PostAsync(product);
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                await _productRepository.PostAsync(product);
+
+                return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para salvar o registro de um novo produto: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Product user)
+        public async Task<IActionResult> Put(Product product)
         {
-            if (id != user.Id)
+            if (product == null)
             {
-                return BadRequest();
+                return BadRequest("A solicitação do produto é nula");
             }
 
-            await _productRepository.PutAsync(user);
-            return NoContent();
+            if (product.Id == 0)
+            {
+                return BadRequest("A solicitação do id do produto é zero");
+            }
+
+            try
+            {
+                await _productRepository.PutAsync(product);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação para atualizar um registro do produto: {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _productRepository.GetByIdAsync(id);
-
-            if (user == null)
+            if (id == 0)
             {
-                return NotFound();
+                return BadRequest("A solicitação do id do produto é zero");
             }
 
-            await _productRepository.DeleteAsync(id); // Certifique-se de que esse método exista no repositório
-            return NoContent();
+            try
+            {
+                var user = await _productRepository.GetByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                await _productRepository.DeleteAsync(id); 
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Erro durante a solicitação, para apagar um registro do produto ID: {id} - {ex.Message}");
+
+                return StatusCode(500, "Erro do Servidor Interno");
+            }
         }
     }
 }
