@@ -48,7 +48,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _productRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(product);
 
             // Act
-            var result = await _controller.GetProduct(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -64,11 +64,11 @@ namespace Test.Ecommerce.WebApi.Controllers
             _productRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((Product)null);
 
             // Act
-            var result = await _controller.GetProduct(1);
+            var result = await _controller.Get(1);
 
             // Assert
-            var notFoundResult = result.Result as NotFoundResult;
-            notFoundResult.Should().NotBeNull();
+            var notFoundResult = result.Result as NotFoundObjectResult;
+            notFoundResult.Value.Should().Be("Erro durante a solicitação do produto, não existe este registro na base dados ID: 1");
             notFoundResult.StatusCode.Should().Be(404);
         }
 
@@ -85,7 +85,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             createdAtActionResult.Should().NotBeNull();
             createdAtActionResult.StatusCode.Should().Be(201);
-            createdAtActionResult.ActionName.Should().Be(nameof(_controller.GetProduct));
+            createdAtActionResult.ActionName.Should().Be(nameof(_controller.Get));
             createdAtActionResult.RouteValues["id"].Should().Be(product.Id);
             createdAtActionResult.Value.Should().Be(product);
         }
@@ -100,7 +100,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             var badRequestResult = result.Result as BadRequestObjectResult;
             badRequestResult.Should().NotBeNull();
             badRequestResult.StatusCode.Should().Be(400);
-            badRequestResult.Value.Should().Be("Product is null");
+            badRequestResult.Value.Should().Be("A solicitação do produto é nula");
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _productRepositoryMock.Setup(repo => repo.PutAsync(product)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Put(1, product);
+            var result = await _controller.Put(product);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -123,14 +123,14 @@ namespace Test.Ecommerce.WebApi.Controllers
         public async Task Put_ReturnsBadRequest_WhenIdDoesNotMatch()
         {
             // Arrange
-            var product = new Product { Id = 1, Name = "Product 1", Amount = 10 };
+            var product = new Product { Id = 0, Name = "Product 1", Amount = 10 };
 
             // Act
-            var result = await _controller.Put(2, product);
+            var result = await _controller.Put(product);
 
             // Assert
-            var badRequestResult = result as BadRequestResult;
-            badRequestResult.Should().NotBeNull();
+            var badRequestResult = result as BadRequestObjectResult;
+            badRequestResult.Value.Should().Be("A solicitação do id do produto é zero");
             badRequestResult.StatusCode.Should().Be(400);
         }
 

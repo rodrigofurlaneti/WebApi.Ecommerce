@@ -79,6 +79,7 @@ namespace Data.Ecommerce.Repository
                         command.Parameters.AddWithValue("@CellPhone", user.CellPhone);
                         command.Parameters.AddWithValue("@Username", user.Username);
                         command.Parameters.AddWithValue("@Password", user.Password);
+                        command.Parameters.AddWithValue("ProfileId", "2");
 
                         await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();

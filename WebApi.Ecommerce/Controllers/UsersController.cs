@@ -82,12 +82,12 @@ namespace WebApi.Ecommerce.Controllers
         {
             if (user == null)
             {
-                return BadRequest("A solicitação do perfil é nula");
+                return BadRequest("A solicitação do usuário é nula");
             }
 
             if (user.Id == 0)
             {
-                return BadRequest("A solicitação do id do perfil é zero");
+                return BadRequest("A solicitação do id do usuário é zero");
             }
 
             try

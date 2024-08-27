@@ -27,7 +27,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _orderProductRepositoryMock.Setup(repo => repo.PutAsync(orderProduct)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.PutOrderProduct(1, orderProduct);
+            var result = await _controller.Put(orderProduct);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -36,17 +36,17 @@ namespace Test.Ecommerce.WebApi.Controllers
         }
 
         [Fact]
-        public async Task PutOrderProduct_ReturnsBadRequest_WhenIdDoesNotMatch()
+        public async Task PutOrderProduct_ReturnsBadRequest_WhenId_EqualsZero()
         {
             // Arrange
-            var orderProduct = new OrderProduct { Id = 1 };
+            var orderProduct = new OrderProduct { Id = 0 };
 
             // Act
-            var result = await _controller.PutOrderProduct(2, orderProduct);
+            var result = await _controller.Put(orderProduct);
 
             // Assert
-            var badRequestResult = result as BadRequestResult;
-            badRequestResult.Should().NotBeNull();
+            var badRequestResult = result as BadRequestObjectResult;
+            badRequestResult.Value.Should().Be("A solicitação do id do pedido do produto é zero");
             badRequestResult.StatusCode.Should().Be(400);
         }
 
@@ -59,7 +59,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _orderProductRepositoryMock.Setup(repo => repo.DeleteAsync(1)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.DeleteOrderProduct(1);
+            var result = await _controller.Delete(1);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -74,7 +74,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _orderProductRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((OrderProduct)null);
 
             // Act
-            var result = await _controller.DeleteOrderProduct(1);
+            var result = await _controller.Delete(1);
 
             // Assert
             var notFoundResult = result as NotFoundResult;

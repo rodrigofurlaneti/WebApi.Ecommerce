@@ -42,6 +42,7 @@ namespace WebApi.Ecommerce
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IOrderProductRepository, OrderProductRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProfileRepository, ProfileRepository>();
             services.AddScoped<IUsersRepository, UsersRepository>();
 
             // Add Swagger services

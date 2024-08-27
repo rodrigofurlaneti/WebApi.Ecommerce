@@ -18,7 +18,7 @@ namespace Data.Ecommerce.Repository
         }
         public async Task<AuthenticationResponse?> PostAsync(AuthenticationRequest authenticationRequest)
         {
-            string storedProcedureName = "Ecommerce_Procedure_Authentication_Post";
+            string storedProcedureName = "Ecommerce_Procedure_Authentication_Insert";
 
             AuthenticationResponse? authentication = null;
 
@@ -66,7 +66,7 @@ namespace Data.Ecommerce.Repository
                 Name = reader.GetString(reader.GetOrdinal("Name")),
                 Username = reader.GetString(reader.GetOrdinal("Username")),
                 Password = reader.GetString(reader.GetOrdinal("Password")),
-                Profile = reader.GetString(reader.GetOrdinal("Profile")),
+                IdProfile = reader.GetInt32(reader.GetOrdinal("ProfileId")),
                 Status = reader.GetBoolean(reader.GetOrdinal("Status")),
             };
         }

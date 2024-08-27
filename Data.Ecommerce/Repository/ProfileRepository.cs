@@ -1,11 +1,12 @@
-﻿using Domain.Ecommerce.Model;
+﻿using Data.Ecommerce.Interface;
+using Domain.Ecommerce.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
 namespace Data.Ecommerce.Repository
 {
-    public class ProfileRepository
+    public class ProfileRepository : IProfileRepository
     {
         private readonly string _connectionString;
 

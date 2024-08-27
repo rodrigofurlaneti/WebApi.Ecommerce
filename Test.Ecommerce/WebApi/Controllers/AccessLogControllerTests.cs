@@ -54,7 +54,7 @@ namespace Test.Ecommerce.WebApi.Controllers
                 .ReturnsAsync((AccessLog)null);
 
             // Act
-            var result = await _controller.GetAccessLog(1);
+            var result = await _controller.Get(1);
 
             // Assert
             result.Result.Should().BeOfType<NotFoundResult>();
@@ -69,7 +69,7 @@ namespace Test.Ecommerce.WebApi.Controllers
                 .ReturnsAsync(accessLog);
 
             // Act
-            var result = await _controller.GetAccessLog(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -121,22 +121,9 @@ namespace Test.Ecommerce.WebApi.Controllers
             // Assert
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             createdAtActionResult.Should().NotBeNull();
-            createdAtActionResult.ActionName.Should().Be(nameof(controller.GetAccessLog));
+            createdAtActionResult.ActionName.Should().Be(nameof(controller.Get));
             createdAtActionResult.RouteValues["id"].Should().Be(accessLog.Id);
             createdAtActionResult.Value.Should().Be(accessLog);
-        }
-
-        [Fact]
-        public async Task Put_ReturnsBadRequest_WhenIdDoesNotMatchAccessLogId()
-        {
-            // Arrange
-            var accessLog = new AccessLog { Id = 1 };
-
-            // Act
-            var result = await _controller.Put(2, accessLog);
-
-            // Assert
-            result.Should().BeOfType<BadRequestResult>();
         }
 
         [Fact]
@@ -148,7 +135,7 @@ namespace Test.Ecommerce.WebApi.Controllers
                 .Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Put(1, accessLog);
+            var result = await _controller.Put(accessLog);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();

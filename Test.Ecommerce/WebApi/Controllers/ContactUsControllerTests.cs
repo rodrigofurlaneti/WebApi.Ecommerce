@@ -27,7 +27,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.GetAsync()).ReturnsAsync(contactUsList);
 
             // Act
-            var result = await _controller.GetContactUs();
+            var result = await _controller.Get();
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -44,7 +44,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(contactUs);
 
             // Act
-            var result = await _controller.GetContactUs(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -60,7 +60,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((ContactUs)null);
 
             // Act
-            var result = await _controller.GetContactUs(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var notFoundResult = result.Result as NotFoundResult;
@@ -81,7 +81,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             createdAtActionResult.Should().NotBeNull();
             createdAtActionResult.StatusCode.Should().Be(201);
-            createdAtActionResult.ActionName.Should().Be(nameof(ContactUsController.GetContactUs));
+            createdAtActionResult.ActionName.Should().Be(nameof(ContactUsController.Get));
             createdAtActionResult.RouteValues["id"].Should().Be(contactUs.Id);
             createdAtActionResult.Value.Should().Be(contactUs);
         }
@@ -94,7 +94,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.PutAsync(contactUs)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.PutUser(1, contactUs);
+            var result = await _controller.Put(contactUs);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -103,17 +103,17 @@ namespace Test.Ecommerce.WebApi.Controllers
         }
 
         [Fact]
-        public async Task PutUser_ReturnsBadRequest_WhenIdDoesNotMatch()
+        public async Task PutUser_ReturnsBadRequest_WhenId_EqualsZero()
         {
             // Arrange
-            var contactUs = new ContactUs { Id = 1, Name = "John Doe", Email = "john@example.com" };
+            var contactUs = new ContactUs { Id = 0, Name = "John Doe", Email = "john@example.com" };
 
             // Act
-            var result = await _controller.PutUser(2, contactUs);
+            var result = await _controller.Put(contactUs);
 
             // Assert
-            var badRequestResult = result as BadRequestResult;
-            badRequestResult.Should().NotBeNull();
+            var badRequestResult = result as BadRequestObjectResult;
+            badRequestResult.Value.Should().Be("A solicitação do id do contate-nos é zero");
             badRequestResult.StatusCode.Should().Be(400);
         }
 
@@ -126,7 +126,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.DeleteAsync(1)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.DeleteUser(1);
+            var result = await _controller.Delete(1);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -141,7 +141,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _contactUsRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((ContactUs)null);
 
             // Act
-            var result = await _controller.DeleteUser(1);
+            var result = await _controller.Delete(1);
 
             // Assert
             var notFoundResult = result as NotFoundResult;

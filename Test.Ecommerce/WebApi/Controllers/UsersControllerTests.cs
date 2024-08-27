@@ -31,7 +31,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.GetAsync()).ReturnsAsync(users);
 
             // Act
-            var result = await _controller.GetUsers();
+            var result = await _controller.Get();
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -48,7 +48,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync(user);
 
             // Act
-            var result = await _controller.GetUser(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var okResult = result.Result as OkObjectResult;
@@ -64,7 +64,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((User)null);
 
             // Act
-            var result = await _controller.GetUser(1);
+            var result = await _controller.Get(1);
 
             // Assert
             var notFoundResult = result.Result as NotFoundResult;
@@ -79,13 +79,13 @@ namespace Test.Ecommerce.WebApi.Controllers
             var user = new User { Id = 1, Name = "User 1" };
 
             // Act
-            var result = await _controller.PostUser(user);
+            var result = await _controller.Post(user);
 
             // Assert
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             createdAtActionResult.Should().NotBeNull();
             createdAtActionResult.StatusCode.Should().Be(201);
-            createdAtActionResult.ActionName.Should().Be(nameof(_controller.GetUser));
+            createdAtActionResult.ActionName.Should().Be(nameof(_controller.Get));
             createdAtActionResult.RouteValues["id"].Should().Be(user.Id);
             createdAtActionResult.Value.Should().Be(user);
         }
@@ -98,7 +98,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.PutAsync(user)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.PutUser(1, user);
+            var result = await _controller.Put(user);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -107,18 +107,18 @@ namespace Test.Ecommerce.WebApi.Controllers
         }
 
         [Fact]
-        public async Task PutUser_ReturnsBadRequest_WhenIdDoesNotMatch()
+        public async Task PutUser_ReturnsBadRequest_WhenID_EqualsZero()
         {
             // Arrange
-            var user = new User { Id = 1, Name = "User 1" };
+            var user = new User { Id = 0, Name = "User 1" };
 
             // Act
-            var result = await _controller.PutUser(2, user);
+            var result = await _controller.Put(user);
 
             // Assert
-            var badRequestResult = result as BadRequestResult;
-            badRequestResult.Should().NotBeNull();
-            badRequestResult.StatusCode.Should().Be(400);
+            var badRequestObjectResult = result as BadRequestObjectResult;
+            badRequestObjectResult.Value.Should().Be("A solicitação do id do usuário é zero");
+            badRequestObjectResult.StatusCode.Should().Be(400);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.DeleteAsync(1)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.DeleteUser(1);
+            var result = await _controller.Delete(1);
 
             // Assert
             var noContentResult = result as NoContentResult;
@@ -145,11 +145,11 @@ namespace Test.Ecommerce.WebApi.Controllers
             _usersRepositoryMock.Setup(repo => repo.GetByIdAsync(1)).ReturnsAsync((User)null);
 
             // Act
-            var result = await _controller.DeleteUser(1);
+            var result = await _controller.Delete(1);
 
             // Assert
-            var notFoundResult = result as NotFoundResult;
-            notFoundResult.Should().NotBeNull();
+            var notFoundResult = result as NotFoundObjectResult;
+            notFoundResult.Value.Should().Be("A solicitação do id do usário não existe na base dados");
             notFoundResult.StatusCode.Should().Be(404);
         }
     }
